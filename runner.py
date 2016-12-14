@@ -1,4 +1,5 @@
 import fetcher
+import embedder
 from collection import Collection
 
 collectionOpts = [
@@ -38,3 +39,6 @@ for options in collectionOpts:
 
   fetcher.fetch_new(options)
   collection.write()
+  embedder.embed_new(options)
+  collection.write()
+
