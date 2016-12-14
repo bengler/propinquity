@@ -32,7 +32,7 @@ def fetch_new(options):
 
 	print "- Fetching %s" % options['process_id']
 
-	download_folder = options['process_id'] + '/data/images/'
+	download_folder = 'data/%s/images/' % options['process_id']
 	collection = options['collection']
 
 	artifact_query = ""
