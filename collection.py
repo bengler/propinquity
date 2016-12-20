@@ -55,7 +55,7 @@ class Collection:
 	def write(self):
 
 		if self.newWorksFound > 0:
-			print "%d works written to file"
+			print "%d works written to file" % self.newWorksFound
 
 			with open(self.collection_filename, 'wb') as csvfile:
 				csv_writer = csv.writer(csvfile)
