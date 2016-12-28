@@ -10,7 +10,6 @@ from ptsne import KLdivergence
 
 # don't output info from Caffe to console
 os.environ['GLOG_minloglevel'] = '2'
-sys.path.insert(0, '/home/audun/caffe3b/python')
 import caffe
 
 class Embedding_model:
