@@ -4,6 +4,7 @@ import os
 import numpy as np
 import collection
 import csv
+import shutil
 from keras.models import load_model
 from ptsne import KLdivergence
 
@@ -17,72 +18,74 @@ class Embedding_model:
 	MODEL_MAP = {
 		'photography' : {
 			'caffe_model_definition' : {
-				'filename': 'models/deploy.prototxt',
-				'source': 's3://some.url'
+				'filename': 'deploy.prototxt',
+				'source': 'https://raw.githubusercontent.com/BVLC/caffe/master/models/bvlc_googlenet/deploy.prototxt'
 			},
 			'caffe_model_weights' : {
-				'filename': 'models/some_model.caffemodel',
-				'source': 's3://some.url'
+				'filename': 'bvlc_googlenet.caffemodel',
+				'source': 'http://dl.caffe.berkeleyvision.org/bvlc_googlenet.caffemodel'
 			},
 			'tsne' : {
-				'filename': 'models/tsne.h5',
-				'source': 's3://some.url'
+				'filename': 'photo_ptsne.h5',
+				'source': ''
 			}
 		},
 		'painting' : {
 			'caffe_model_definition' : {
-				'filename': 'models/deploy.prototxt',
-				'source': 's3://some.url'
+				'filename': 'deploy.prototxt',
+				'source': ''
 			},
 			'caffe_model_weights' : {
-				'filename': 'models/finetuned_bengler_googlenet_2_iter_302457.caffemodel',
-				'source': 's3://some.url'
+				#'filename': 'finetuned_bengler_googlenet_2_iter_302457.caffemodel',
+				'filename': 'finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel',
+				'source': ''
 			},
 			'tsne' : {
-				'filename': 'models/style_model.h5',
-				'source': 's3://some.url'
+				#'filename': 'style_model.h5',
+				'filename': 'keyword_model_1.h5',
+				'source': ''
 			}
 		},
 		'printmaking' : {
 			'caffe_model_definition' : {
-				'filename': 'models/deploy.prototxt',
-				'source': 's3://some.url'
+				'filename': 'deploy.prototxt',
+				'source': ''
 			},
 			'caffe_model_weights' : {
-				'filename': 'models/some_model.caffemodel',
-				'source': 's3://some.url'
+				'filename': 'finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel',
+				'source': ''
 			},
 			'tsne' : {
-				'filename': 'models/tsne.h5',
-				'source': 's3://some.url'
+				'filename': 'prints_ptsne.h5',
+				'source': ''
 			}
 		},
 		'drawings' : {
 			'caffe_model_definition' : {
-				'filename': 'models/deploy.prototxt',
-				'source': 's3://some.url'
+				'filename': 'deploy.prototxt',
+				'source': ''
 			},
 			'caffe_model_weights' : {
-				'filename': 'models/some_model.caffemodel',
-				'source': 's3://some.url'
+				'filename': 'some_model.caffemodel',
+				'source': ''
 			},
 			'tsne' : {
-				'filename': 'models/tsne.h5',
-				'source': 's3://some.url'
+				'filename': 'drawings_ptsne.h5',
+				'source': ''
 			}
 		},
 		'design' : {
 			'caffe_model_definition' : {
-				'filename': 'models/deploy.prototxt',
-				'source': 's3://some.url'
+				'filename': 'deploy.prototxt',
+				'source': 'https://raw.githubusercontent.com/BVLC/caffe/master/models/bvlc_googlenet/deploy.prototxt'
 			},
 			'caffe_model_weights' : {
-				'filename': 'models/some_model.caffemodel',
-				'source': 's3://some.url'
+				'filename': 'bvlc_googlenet.caffemodel',
+				'source': 'http://dl.caffe.berkeleyvision.org/bvlc_googlenet.caffemodel'
 			},
 			'tsne' : {
-				'filename': 'models/tsne.h5',
-				'source': 's3://some.url'
+				'filename': 'design_ptsne.h5',
+				'source': ''
 			}
 		},
 	}
@@ -92,18 +95,23 @@ class Embedding_model:
 	def __init__(self, process_id):
 		models = self.MODEL_MAP[process_id]
 		
+		modelfolder = os.path.join("data/", process_id, "models")
+		if not os.path.exists(modelfolder):
+			os.makedirs(modelfolder)
+
 		# download models if needed
 		for model in models.values():
-			filename = os.path.join("data/", process_id, model['filename'])
+			filename = os.path.join(modelfolder, model['filename'])
 			if not os.path.exists(filename):
 				print "could not find model file '%s', downloading..." % filename
-				r = requests.get(model['source'], stream=True)
+				response = requests.get(model['source'], stream=True)
 				with open(filename, 'wb') as out_file:
-					shutil.copyfileobj(response.raw, out_file)
+					for chunk in response.iter_content(chunk_size=128):
+						out_file.write(chunk)
 
-		caffe_model_definition = os.path.join("data/", process_id, models['caffe_model_definition']['filename'])
-		caffe_model_weights = os.path.join("data/", process_id, models['caffe_model_weights']['filename'])
-		keras_ptsne_model = os.path.join("data/", process_id, models['tsne']['filename'])
+		caffe_model_definition = os.path.join(modelfolder, models['caffe_model_definition']['filename'])
+		caffe_model_weights = os.path.join(modelfolder, models['caffe_model_weights']['filename'])
+		keras_ptsne_model = os.path.join(modelfolder, models['tsne']['filename'])
 
 		# initialize models 
 		self.net = caffe.Classifier(caffe_model_definition, caffe_model_weights, mean=self.MEAN_IMAGE, channel_swap=(2,1,0),raw_scale=255,image_dims=(224,224))
