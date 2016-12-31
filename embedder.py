@@ -31,13 +31,13 @@ class Embedding_model:
 		},
 		'painting' : {
 			'caffe_model_definition' : {
-				'filename': 'deploy.prototxt',
-				'source': ''
+				'filename': 'keywords_deploy.prototxt',
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/deploy.prototxt'
 			},
 			'caffe_model_weights' : {
 				#'filename': 'finetuned_bengler_googlenet_2_iter_302457.caffemodel',
-				'filename': 'finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel',
-				'source': ''
+				'filename': 'keywords_model.caffemodel',
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel'
 			},
 			'tsne' : {
 				#'filename': 'style_model.h5',
@@ -47,26 +47,26 @@ class Embedding_model:
 		},
 		'printmaking' : {
 			'caffe_model_definition' : {
-				'filename': 'deploy.prototxt',
-				'source': ''
+				'filename': 'keywords_deploy.prototxt',
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/deploy.prototxt'
 			},
 			'caffe_model_weights' : {
-				'filename': 'finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel',
-				'source': ''
+				'filename': 'keywords_model.caffemodel',
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel'
 			},
 			'tsne' : {
 				'filename': 'prints_ptsne.h5',
-				'source': ''
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/DM_printmaking_model_3.h5'
 			}
 		},
 		'drawings' : {
 			'caffe_model_definition' : {
-				'filename': 'deploy.prototxt',
-				'source': ''
+				'filename': 'keywords_deploy.prototxt',
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/deploy.prototxt'
 			},
 			'caffe_model_weights' : {
-				'filename': 'some_model.caffemodel',
-				'source': ''
+				'filename': 'keywords_model.caffemodel',
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel'
 			},
 			'tsne' : {
 				'filename': 'drawings_ptsne.h5',
@@ -84,7 +84,7 @@ class Embedding_model:
 			},
 			'tsne' : {
 				'filename': 'design_ptsne.h5',
-				'source': ''
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/design/DM_design_model_2.h5'
 			}
 		},
 	}
