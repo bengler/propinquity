@@ -6,7 +6,9 @@ from dateutil import parser
 FIELDS = {
 	'sequence_id': 0,
 	'identifier': 1,
-	'published_at': 2
+	'published_at': 2,
+	'image_id': 3,
+	'image_downloaded' : 4
 }
 
 class Collection:
@@ -26,15 +28,16 @@ class Collection:
 				print "New collection for %s" % collection_id
 
 	def add_work(self, work):
-		identifier = work['identifier']
-		published_at = work['published_at']
+		identifier = work[FIELDS['identifier']]
 
 		if (self.is_retrieved(identifier)):
 			return -1
 
 		sequence_id = len(self.works) + 1
 
-		self.works.append([sequence_id, identifier, published_at])
+		work[FIELDS['sequence_id']] = sequence_id
+
+		self.works.append(work)
 		self.newWorksFound += 1
 
 		return sequence_id
@@ -64,3 +67,16 @@ class Collection:
 					csv_writer.writerow(w)
 		else:
 			print "No new works found"
+
+	def get_works_to_download(self):
+		found_works = []
+		for work in self.works:
+			if work[FIELDS['image_downloaded']] == 0:
+				found_works.append(work)
+
+		return found_works
+
+	def add_image(self, sequence_id):
+		self.works[sequence_id][FIELDS['image_downloaded']] = 1
+
+		return None

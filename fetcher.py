@@ -6,7 +6,7 @@ from multiprocessing import Pool
 
 APIKEY = "demo"
 
-def fetch_image(options):
+def fetch_work_details(options):
 	result = options
 
 	if 'artifact.defaultMediaIdentifier' in result:
@@ -14,15 +14,26 @@ def fetch_image(options):
 		object_id = result['identifier.id']
 		published_at = result['artifact.publishedDate']
 
-		img_url = "https://mm.dimu.org/image/%s?dimension=400x400" % image_id
-		res = requests.get(img_url)
-		if res.status_code == 200:
-			return [res.content, object_id, published_at]
-		else:
-			print "failed downloading images from url %s" % img_url
-			import pdb;pdb.set_trace()
+		return [None, object_id, published_at, image_id, 0]
 	else:
 		print "no image_id"
+		import pdb;pdb.set_trace()
+
+	return None
+
+def fetch_image(options):
+	result = options
+
+	image_id = result[collection.FIELDS['image_id']]
+	sequence_id = result[collection.FIELDS['sequence_id']]
+
+	img_url = "https://mm.dimu.org/image/%s?dimension=400x400" % image_id
+	res = requests.get(img_url)
+	if res.status_code == 200:
+		# TODO : we should check that we've received an image and not a HTTP page, e.g. by loading image with Pillow?
+		return {'sequence_id' : sequence_id, 'image_data' : res.content}
+	else:
+		print "failed downloading images from url %s" % img_url
 		import pdb;pdb.set_trace()
 
 	return None
@@ -57,24 +68,32 @@ def fetch_new(options):
 	# callback from the worker pool
 	def completed(results):
 		for result in results:
-			image_data, object_id, published_at = result
-			sequence_id = collection.add_work({'identifier': object_id, 'published_at': published_at})
+			if not result is None:
+				with open(download_folder + str(result['sequence_id']).zfill(4)+".jpg", 'wb') as f:
+					f.write(result['image_data'])
 
-			# Images which are already retreived return -1
-			if (sequence_id != -1):
-				with open(download_folder + str(sequence_id).zfill(4)+".jpg", 'wb') as f:
-					f.write(image_data)
+				collection.add_image(result['sequence_id'])
 
-	# download the new images
+	# get details of new works
 	for r in range(0,numresults,10):
 		response = requests.get(url + "&start=" + str(r))
 		results = response.json()['response']['docs']
 
-		pool = Pool(processes=10)
-		pool.map_async(fetch_image, results, None, completed)
-		pool.close()
-		pool.join()
+		#insert new results
+		for res in results:
+			ind = fetch_work_details(res)
+			if not ind is None:
+				collection.add_work(ind)
 
 		print "- got %d result(s) starting from row %d" % (len(results), r)
+
+	# get a list of all works that we need to download
+	results = collection.get_works_to_download()
+
+	# download works
+	pool = Pool(processes=10)
+	pool.map_async(fetch_image, results, None, completed)
+	pool.close()
+	pool.join()
 
 	# print "Done!"
