@@ -143,7 +143,7 @@ class Embedding_model:
 
 def embed_new(options):
 	print "- Embedding %s" % options['process_id']
-
+	
 	# get net models and tsne
 	embedder = Embedding_model(options['process_id'])
 
@@ -152,9 +152,13 @@ def embed_new(options):
 	csv_file = open(os.path.join('data/', options['process_id'], 'embeddings.csv'),'a')
 	csv_writer = csv.writer(csv_file)
 
-	for work in options['collection'].works:
-		if work[collection.FIELDS['published_at']] > options['start_date']:
-			work_image = images_root + str(work[collection.FIELDS['sequence_id']]).zfill(4) + ".jpg"
-			embedding = embedder.embed(work_image)
-			csv_writer.writerow([work_image] + embedding)
+	collection = options['collection']
+	works_to_embed = collection.get_works_to_embed()
+	for work in works_to_embed:
+		sequence_id = work[collection.FIELDS['sequence_id']]
 
+		work_image = images_root + str(sequence_id).zfill(4) + ".jpg"
+		embedding = embedder.embed(work_image)
+		csv_writer.writerow([work_image] + embedding)
+
+		collection.add_embedding(sequence_id)

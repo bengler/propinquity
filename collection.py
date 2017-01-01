@@ -8,7 +8,8 @@ FIELDS = {
 	'identifier': 1,
 	'published_at': 2,
 	'image_id': 3,
-	'image_downloaded' : 4
+	'image_downloaded' : 4,
+	'embedded': 5
 }
 
 class Collection:
@@ -79,4 +80,17 @@ class Collection:
 	def add_image(self, sequence_id):
 		self.works[sequence_id][FIELDS['image_downloaded']] = 1
 
+		return None
+
+	def get_works_to_embed(self):
+		found_works = []
+		for work in self.works:
+			if work[FIELDS['embedded']] == 0:
+				found_works.append(work)
+
+		return found_works
+
+	def add_embedding(self, sequence_id):
+		self.works[sequence_id][FIELDS['embedded']] = 1
+		
 		return None
