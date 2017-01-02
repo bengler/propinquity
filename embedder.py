@@ -17,16 +17,16 @@ class Embedding_model:
 	MODEL_MAP = {
 		'photography' : {
 			'caffe_model_definition' : {
-				'filename': 'deploy.prototxt',
-				'source': 'https://raw.githubusercontent.com/BVLC/caffe/master/models/bvlc_googlenet/deploy.prototxt'
+				'filename': 'keywords_deploy.prototxt',
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/deploy.prototxt'
 			},
 			'caffe_model_weights' : {
-				'filename': 'bvlc_googlenet.caffemodel',
-				'source': 'http://dl.caffe.berkeleyvision.org/bvlc_googlenet.caffemodel'
+				'filename': 'keywords_model.caffemodel',
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel'
 			},
 			'tsne' : {
 				'filename': 'photo_ptsne.h5',
-				'source': ''
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/paintings/DM_keyword_model_9.h5'
 			}
 		},
 		'painting' : {
@@ -41,8 +41,8 @@ class Embedding_model:
 			},
 			'tsne' : {
 				#'filename': 'style_model.h5',
-				'filename': 'keyword_model_1.h5',
-				'source': ''
+				'filename': 'painting_ptsne.h5',
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/paintings/DM_keyword_model_9.h5'
 			}
 		},
 		'printmaking' : {
@@ -70,7 +70,7 @@ class Embedding_model:
 			},
 			'tsne' : {
 				'filename': 'drawings_ptsne.h5',
-				'source': ''
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/drawings/DM_drawings_model_1.h5'
 			}
 		},
 		'design' : {
