@@ -18,6 +18,7 @@ class Collection:
 
 		self.collection_filename = "data/%s/%s.csv" % (collection_id, collection_id)
 		self.newWorksFound = 0
+		self.modified = False
 
 		if os.path.isfile(self.collection_filename):
 			with open(self.collection_filename) as csvfile:
@@ -40,6 +41,7 @@ class Collection:
 
 		self.works.append(work)
 		self.newWorksFound += 1
+		self.modified = True
 
 		return sequence_id
 
@@ -57,40 +59,43 @@ class Collection:
 		return False
 
 	def write(self):
-
-		if self.newWorksFound > 0:
-			print "%d works written to file" % self.newWorksFound
-
+		if self.modified:
 			with open(self.collection_filename, 'wb') as csvfile:
 				csv_writer = csv.writer(csvfile)
 				csv_writer.writerow(FIELDS.keys())
 				for w in self.works:
 					csv_writer.writerow(w)
+			self.modified = False
+
+			print "%d new works written to file" % self.newWorksFound
+			print "Saved modifications"
 		else:
-			print "No new works found"
+			print "No modifications to save"
 
 	def get_works_to_download(self):
 		found_works = []
 		for work in self.works:
-			if work[FIELDS['image_downloaded']] == 0:
+			if work[FIELDS['image_downloaded']] == "0":
 				found_works.append(work)
 
 		return found_works
 
 	def add_image(self, sequence_id):
-		self.works[sequence_id][FIELDS['image_downloaded']] = 1
+		self.works[int(sequence_id) - 1][FIELDS['image_downloaded']] = "1"
+		self.modified = True
 
 		return None
 
 	def get_works_to_embed(self):
 		found_works = []
 		for work in self.works:
-			if work[FIELDS['embedded']] == 0:
+			if work[FIELDS['embedded']] == "0" and work[FIELDS['image_downloaded']] == "1":
 				found_works.append(work)
 
 		return found_works
 
 	def add_embedding(self, sequence_id):
-		self.works[sequence_id][FIELDS['embedded']] = 1
+		self.works[int(sequence_id) - 1][FIELDS['embedded']] = "1"
+		self.modified = True
 		
 		return None

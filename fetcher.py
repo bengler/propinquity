@@ -14,7 +14,7 @@ def fetch_work_details(options):
 		object_id = result['identifier.id']
 		published_at = result['artifact.publishedDate']
 
-		return [None, object_id, published_at, image_id, 0, 0]
+		return [None, object_id, published_at, image_id, "0", "0"]
 	else:
 		print "no image_id"
 		import pdb;pdb.set_trace()
@@ -24,8 +24,11 @@ def fetch_work_details(options):
 def fetch_image(options):
 	result = options
 
-	image_id = result[collection.FIELDS['image_id']]
-	sequence_id = result[collection.FIELDS['sequence_id']]
+	# TODO : should switch to dictionary instead
+	#image_id = result[collection.FIELDS['image_id']]
+	#sequence_id = result[collection.FIELDS['sequence_id']]
+	image_id = result[3]
+	sequence_id = result[0]
 
 	img_url = "https://mm.dimu.org/image/%s?dimension=400x400" % image_id
 	res = requests.get(img_url)
@@ -89,6 +92,7 @@ def fetch_new(options):
 
 	# get a list of all works that we need to download
 	results = collection.get_works_to_download()
+	print "- downloading %d images" % (len(results))
 
 	# download works
 	pool = Pool(processes=10)

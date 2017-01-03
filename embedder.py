@@ -5,6 +5,11 @@ import numpy as np
 import collection
 import csv
 import shutil
+
+import tensorflow as tf
+from keras import backend as K
+sess = tf.Session()
+K.set_session(sess)
 from keras.models import load_model
 from ptsne import KLdivergence
 
@@ -152,8 +157,9 @@ def embed_new(options):
 	csv_file = open(os.path.join('data/', options['process_id'], 'embeddings.csv'),'a')
 	csv_writer = csv.writer(csv_file)
 
-	collection = options['collection']
-	works_to_embed = collection.get_works_to_embed()
+	my_collection = options['collection']
+	works_to_embed = my_collection.get_works_to_embed()
+	print "- embedding %d images" % (len(works_to_embed))
 	for work in works_to_embed:
 		sequence_id = work[collection.FIELDS['sequence_id']]
 
@@ -161,4 +167,4 @@ def embed_new(options):
 		embedding = embedder.embed(work_image)
 		csv_writer.writerow([work_image] + embedding)
 
-		collection.add_embedding(sequence_id)
+		my_collection.add_embedding(sequence_id)
