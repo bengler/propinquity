@@ -2,6 +2,7 @@
 import requests
 import shutil
 import os
+import arrow
 from StringIO import StringIO
 from PIL import Image
 from multiprocessing import Pool
@@ -64,9 +65,11 @@ def fetch_new(options):
 	start_date = "1800-00-00T00:00:00Z"
 	if options['start_date'] != None:
 		print '- Looking for works since %s' % options['start_date']
-		start_date = options['start_date']
+		start_date = arrow.get(options['start_date']) \
+			.shift(microseconds=1000).format('YYYY-MM-DDTHH:mm:ss.SSS')+'Z'
 
-	url = "http://api.dimu.org/api/solr/select?q=identifier.owner:%s%s&wt=json&fq=artifact.hasPictures:true&api.key=%s&fq=artifact.publishedDate:[%s TO NOW]&sort=artifact.publishedDate%%20asc" % (options['collection_id'], artifact_query, APIKEY, start_date)
+	url = "http://api.dimu.org/api/solr/select?q=identifier.owner:%s%s&wt=json&fq=artifact.hasPictures:true&api.key=%s&fq=artifact.publishedDate:[%s TO NOW]&sort=artifact.publishedDate%%20asc" \
+		% (options['collection_id'], artifact_query, APIKEY, start_date)
 
 	response = requests.get(url)
 	numresults = response.json()['response']['numFound']
