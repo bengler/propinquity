@@ -4,15 +4,21 @@ import os
 import numpy as np
 import csv
 import shutil
+from StringIO import StringIO
 
+# suppress info from Keras/TensorFlow to console
+stderr = sys.stderr
+sys.stderr = StringIO()
 import tensorflow as tf
 from keras import backend as K
+sys.stderr = stderr
+
 sess = tf.Session()
 K.set_session(sess)
 from keras.models import load_model
 from ptsne import KLdivergence
 
-# don't output info from Caffe to console
+# suppress info from Caffe to console
 os.environ['GLOG_minloglevel'] = '2'
 import caffe
 
