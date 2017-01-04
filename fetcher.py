@@ -16,7 +16,12 @@ def fetch_work_details(options):
 		object_id = result['identifier.id']
 		published_at = result['artifact.publishedDate']
 
-		return [None, object_id, published_at, image_id, 0, 0]
+		work = {
+			'sequence_id': None, 'identifier': object_id,
+			'published_at': published_at, 'image_id': image_id, 
+			'image_downloaded': 0, 'embedded': 0
+		}
+		return work
 	else:
 		print "no image_id"
 		import pdb;pdb.set_trace()

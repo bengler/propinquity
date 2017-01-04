@@ -21,7 +21,7 @@ class Collection:
 		self.modified = False
 
 		if os.path.isfile(self.collection_filename):
-			self.works = pd.read_csv(self.collection_filename)
+			self.works = pd.read_csv(self.collection_filename) \
 				.transpose().to_dict().values()
 			print "\n\nInstanced %s collection from file" % collection_id
 		else:
