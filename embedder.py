@@ -4,12 +4,17 @@ import os
 import numpy as np
 import collection
 import csv
+import shutil
+
+import tensorflow as tf
+from keras import backend as K
+sess = tf.Session()
+K.set_session(sess)
 from keras.models import load_model
 from ptsne import KLdivergence
 
 # don't output info from Caffe to console
 os.environ['GLOG_minloglevel'] = '2'
-sys.path.insert(0, '/home/audun/caffe3b/python')
 import caffe
 
 class Embedding_model:
@@ -17,72 +22,74 @@ class Embedding_model:
 	MODEL_MAP = {
 		'photography' : {
 			'caffe_model_definition' : {
-				'filename': 'models/deploy.prototxt',
-				'source': 's3://some.url'
+				'filename': 'keywords_deploy.prototxt',
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/deploy.prototxt'
 			},
 			'caffe_model_weights' : {
-				'filename': 'models/some_model.caffemodel',
-				'source': 's3://some.url'
+				'filename': 'keywords_model.caffemodel',
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel'
 			},
 			'tsne' : {
-				'filename': 'models/tsne.h5',
-				'source': 's3://some.url'
+				'filename': 'photo_ptsne.h5',
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/paintings/DM_keyword_model_9.h5'
 			}
 		},
 		'painting' : {
 			'caffe_model_definition' : {
-				'filename': 'models/deploy.prototxt',
-				'source': 's3://some.url'
+				'filename': 'keywords_deploy.prototxt',
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/deploy.prototxt'
 			},
 			'caffe_model_weights' : {
-				'filename': 'models/finetuned_bengler_googlenet_2_iter_302457.caffemodel',
-				'source': 's3://some.url'
+				#'filename': 'finetuned_bengler_googlenet_2_iter_302457.caffemodel',
+				'filename': 'keywords_model.caffemodel',
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel'
 			},
 			'tsne' : {
-				'filename': 'models/style_model.h5',
-				'source': 's3://some.url'
+				#'filename': 'style_model.h5',
+				'filename': 'painting_ptsne.h5',
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/paintings/DM_keyword_model_9.h5'
 			}
 		},
 		'printmaking' : {
 			'caffe_model_definition' : {
-				'filename': 'models/deploy.prototxt',
-				'source': 's3://some.url'
+				'filename': 'keywords_deploy.prototxt',
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/deploy.prototxt'
 			},
 			'caffe_model_weights' : {
-				'filename': 'models/some_model.caffemodel',
-				'source': 's3://some.url'
+				'filename': 'keywords_model.caffemodel',
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel'
 			},
 			'tsne' : {
-				'filename': 'models/tsne.h5',
-				'source': 's3://some.url'
+				'filename': 'prints_ptsne.h5',
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/DM_printmaking_model_3.h5'
 			}
 		},
 		'drawings' : {
 			'caffe_model_definition' : {
-				'filename': 'models/deploy.prototxt',
-				'source': 's3://some.url'
+				'filename': 'keywords_deploy.prototxt',
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/deploy.prototxt'
 			},
 			'caffe_model_weights' : {
-				'filename': 'models/some_model.caffemodel',
-				'source': 's3://some.url'
+				'filename': 'keywords_model.caffemodel',
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel'
 			},
 			'tsne' : {
-				'filename': 'models/tsne.h5',
-				'source': 's3://some.url'
+				'filename': 'drawings_ptsne.h5',
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/drawings/DM_drawings_model_1.h5'
 			}
 		},
 		'design' : {
 			'caffe_model_definition' : {
-				'filename': 'models/deploy.prototxt',
-				'source': 's3://some.url'
+				'filename': 'deploy.prototxt',
+				'source': 'https://raw.githubusercontent.com/BVLC/caffe/master/models/bvlc_googlenet/deploy.prototxt'
 			},
 			'caffe_model_weights' : {
-				'filename': 'models/some_model.caffemodel',
-				'source': 's3://some.url'
+				'filename': 'bvlc_googlenet.caffemodel',
+				'source': 'http://dl.caffe.berkeleyvision.org/bvlc_googlenet.caffemodel'
 			},
 			'tsne' : {
-				'filename': 'models/tsne.h5',
-				'source': 's3://some.url'
+				'filename': 'design_ptsne.h5',
+				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/design/DM_design_model_2.h5'
 			}
 		},
 	}
@@ -92,18 +99,23 @@ class Embedding_model:
 	def __init__(self, process_id):
 		models = self.MODEL_MAP[process_id]
 		
+		modelfolder = os.path.join("data/", process_id, "models")
+		if not os.path.exists(modelfolder):
+			os.makedirs(modelfolder)
+
 		# download models if needed
 		for model in models.values():
-			filename = os.path.join("data/", process_id, model['filename'])
+			filename = os.path.join(modelfolder, model['filename'])
 			if not os.path.exists(filename):
 				print "could not find model file '%s', downloading..." % filename
-				r = requests.get(model['source'], stream=True)
+				response = requests.get(model['source'], stream=True)
 				with open(filename, 'wb') as out_file:
-					shutil.copyfileobj(response.raw, out_file)
+					for chunk in response.iter_content(chunk_size=128):
+						out_file.write(chunk)
 
-		caffe_model_definition = os.path.join("data/", process_id, models['caffe_model_definition']['filename'])
-		caffe_model_weights = os.path.join("data/", process_id, models['caffe_model_weights']['filename'])
-		keras_ptsne_model = os.path.join("data/", process_id, models['tsne']['filename'])
+		caffe_model_definition = os.path.join(modelfolder, models['caffe_model_definition']['filename'])
+		caffe_model_weights = os.path.join(modelfolder, models['caffe_model_weights']['filename'])
+		keras_ptsne_model = os.path.join(modelfolder, models['tsne']['filename'])
 
 		# initialize models 
 		self.net = caffe.Classifier(caffe_model_definition, caffe_model_weights, mean=self.MEAN_IMAGE, channel_swap=(2,1,0),raw_scale=255,image_dims=(224,224))
@@ -136,7 +148,7 @@ class Embedding_model:
 
 def embed_new(options):
 	print "- Embedding %s" % options['process_id']
-
+	
 	# get net models and tsne
 	embedder = Embedding_model(options['process_id'])
 
@@ -145,9 +157,14 @@ def embed_new(options):
 	csv_file = open(os.path.join('data/', options['process_id'], 'embeddings.csv'),'a')
 	csv_writer = csv.writer(csv_file)
 
-	for work in options['collection'].works:
-		if work[collection.FIELDS['published_at']] > options['start_date']:
-			work_image = images_root + str(work[collection.FIELDS['sequence_id']]).zfill(4) + ".jpg"
-			embedding = embedder.embed(work_image)
-			csv_writer.writerow([work_image] + embedding)
+	my_collection = options['collection']
+	works_to_embed = my_collection.get_works_to_embed()
+	print "- embedding %d images" % (len(works_to_embed))
+	for work in works_to_embed:
+		sequence_id = work[collection.FIELDS['sequence_id']]
 
+		work_image = images_root + str(sequence_id).zfill(4) + ".jpg"
+		embedding = embedder.embed(work_image)
+		csv_writer.writerow([work_image] + embedding)
+
+		my_collection.add_embedding(sequence_id)
