@@ -2,7 +2,6 @@ import requests
 import sys
 import os
 import numpy as np
-import collection
 import csv
 import shutil
 
@@ -157,14 +156,14 @@ def embed_new(options):
 	csv_file = open(os.path.join('data/', options['process_id'], 'embeddings.csv'),'a')
 	csv_writer = csv.writer(csv_file)
 
-	my_collection = options['collection']
-	works_to_embed = my_collection.get_works_to_embed()
+	collection = options['collection']
+	works_to_embed = collection.get_works_to_embed()
 	print "- embedding %d images" % (len(works_to_embed))
 	for work in works_to_embed:
-		sequence_id = work[collection.FIELDS['sequence_id']]
+		sequence_id = work['sequence_id']
 
 		work_image = images_root + str(sequence_id).zfill(4) + ".jpg"
 		embedding = embedder.embed(work_image)
 		csv_writer.writerow([work_image] + embedding)
 
-		my_collection.add_embedding(sequence_id)
+		collection.add_embedding(sequence_id)
