@@ -2,6 +2,8 @@
 import requests
 import shutil
 import os
+from StringIO import StringIO
+from PIL import Image
 from multiprocessing import Pool
 
 APIKEY = "demo"
@@ -23,14 +25,18 @@ def fetch_work_details(options):
 
 def fetch_image(options):
 	result = options
-	
+
 	image_id = result['image_id']
 	sequence_id = result['sequence_id']
 
 	img_url = "https://mm.dimu.org/image/%s?dimension=400x400" % image_id
 	res = requests.get(img_url)
 	if res.status_code == 200:
-		# TODO : we should check that we've received an image and not a HTTP page, e.g. by loading image with Pillow?
+		try:
+			img = Image.open(StringIO(res.content)).load()
+		except:
+			print "the server returned an invalid image from url %s" % img_url
+			return None
 		return {'sequence_id' : sequence_id, 'image_data' : res.content}
 	else:
 		print "failed downloading images from url %s" % img_url

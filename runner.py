@@ -38,7 +38,6 @@ for options in collectionOpts:
   options['collection'] = collection
 
   fetcher.fetch_new(options)
-  collection.write()
   embedder.embed_new(options)
   collection.write()
 
