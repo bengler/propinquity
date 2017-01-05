@@ -5,6 +5,9 @@ import numpy as np
 import csv
 import shutil
 from StringIO import StringIO
+import logging
+
+logger = logging.getLogger('propinquity')
 
 # suppress info from Keras/TensorFlow to console
 stderr = sys.stderr
@@ -112,7 +115,7 @@ class Embedding_model:
 		for model in models.values():
 			filename = os.path.join(modelfolder, model['filename'])
 			if not os.path.exists(filename):
-				print "could not find model file '%s', downloading..." % filename
+				logger.info("could not find model file '%s', downloading..." % filename)
 				response = requests.get(model['source'], stream=True)
 				with open(filename, 'wb') as out_file:
 					for chunk in response.iter_content(chunk_size=128):
@@ -152,7 +155,7 @@ class Embedding_model:
 		return embedding
 
 def embed_new(options):
-	print "- Embedding %s" % options['process_id']
+	logger.info("- Embedding %s" % options['process_id'])
 	
 	# get net models and tsne
 	embedder = Embedding_model(options['process_id'])
@@ -164,7 +167,7 @@ def embed_new(options):
 
 	collection = options['collection']
 	works_to_embed = collection.get_works_to_embed()
-	print "- embedding %d images" % (len(works_to_embed))
+	logger.info("- embedding %d images" % (len(works_to_embed)))
 	for work in works_to_embed:
 		sequence_id = work['sequence_id']
 

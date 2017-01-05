@@ -2,6 +2,9 @@ import os.path
 import datetime
 from dateutil import parser
 import pandas as pd
+import logging
+
+logger = logging.getLogger('propinquity')
 
 class Collection:
 
@@ -23,10 +26,10 @@ class Collection:
 		if os.path.isfile(self.collection_filename):
 			self.works = pd.read_csv(self.collection_filename) \
 				.transpose().to_dict().values()
-			print "\n\nInstanced %s collection from file" % collection_id
+			logger.info("\n\nInstanced %s collection from file" % collection_id)
 		else:
 			self.works = []
-			print "New collection for %s" % collection_id
+			logger.info("New collection for %s" % collection_id)
 
 	def add_work(self, work):
 		identifier = work['identifier']
@@ -63,10 +66,10 @@ class Collection:
 				self.collection_filename, index=False, columns=self.FIELDS)
 			self.modified = False
 
-			print "%d new works written to file" % self.newWorksFound
-			print "Saved modifications to collection"
+			logger.info("%d new works written to file" % self.newWorksFound)
+			logger.info("Saved modifications to collection")
 		else:
-			print "No modifications to collection to save"
+			logger.info("No modifications to collection to save")
 
 	def get_works_to_download(self):
 		found_works = []
