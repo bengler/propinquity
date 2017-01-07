@@ -6,6 +6,7 @@ import csv
 import shutil
 from StringIO import StringIO
 import logging
+from requests.exceptions import RequestException
 
 logger = logging.getLogger('propinquity')
 
@@ -106,6 +107,7 @@ class Embedding_model:
 
 	def __init__(self, process_id):
 		models = self.MODEL_MAP[process_id]
+		self.loaded_models = False
 		
 		modelfolder = os.path.join("data/", process_id, "models")
 		if not os.path.exists(modelfolder):
@@ -116,10 +118,14 @@ class Embedding_model:
 			filename = os.path.join(modelfolder, model['filename'])
 			if not os.path.exists(filename):
 				logger.info("could not find model file '%s', downloading..." % filename)
-				response = requests.get(model['source'], stream=True)
-				with open(filename, 'wb') as out_file:
-					for chunk in response.iter_content(chunk_size=128):
-						out_file.write(chunk)
+				try:
+					response = requests.get(model['source'], stream=True)
+					with open(filename, 'wb') as out_file:
+						for chunk in response.iter_content(chunk_size=128):
+							out_file.write(chunk)
+				except RequestException:
+					logger.error("could not download model file '%s', aborting embedding..." % filename)
+					return None
 
 		caffe_model_definition = os.path.join(modelfolder, models['caffe_model_definition']['filename'])
 		caffe_model_weights = os.path.join(modelfolder, models['caffe_model_weights']['filename'])
@@ -131,6 +137,8 @@ class Embedding_model:
 
 		# initialize t-sne
 		self.tsne = load_model(keras_ptsne_model, custom_objects={'KLdivergence' : KLdivergence})
+
+		self.loaded_models = True
 
 	def net_weights(self, image):
 		input_image = caffe.io.load_image(image)
@@ -159,6 +167,8 @@ def embed_new(options):
 	
 	# get net models and tsne
 	embedder = Embedding_model(options['process_id'])
+	if not embedder.loaded_models:
+		return None
 
 	images_root = 'data/%s/images/' % options['process_id']
 
