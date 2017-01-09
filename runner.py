@@ -1,6 +1,26 @@
 import fetcher
 import embedder
 from collection import Collection
+import logging
+from logging.handlers import RotatingFileHandler
+import sys
+
+# set up rotating logfile (and log to console)
+logger = logging.getLogger('propinquity')
+logger.setLevel(logging.DEBUG)
+fh = RotatingFileHandler('propinquity.log', maxBytes=1e8, backupCount=1)
+fh.setLevel(logging.DEBUG)
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+fh.setFormatter(formatter)
+logger.addHandler(fh)
+logger.addHandler(ch)
+
+# log exceptions to logfile
+def my_handler(type, value, tb):
+    logger.error("Uncaught exception: {0}".format(str(value)), exc_info=(type, value, tb))
+sys.excepthook = my_handler
 
 collectionOpts = [
   {
@@ -38,7 +58,6 @@ for options in collectionOpts:
   options['collection'] = collection
 
   fetcher.fetch_new(options)
-  collection.write()
   embedder.embed_new(options)
   collection.write()
 

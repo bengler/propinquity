@@ -2,18 +2,27 @@ import requests
 import sys
 import os
 import numpy as np
-import collection
 import csv
 import shutil
+from StringIO import StringIO
+import logging
+from requests.exceptions import RequestException
 
+logger = logging.getLogger('propinquity')
+
+# suppress info from Keras/TensorFlow to console
+stderr = sys.stderr
+sys.stderr = StringIO()
 import tensorflow as tf
 from keras import backend as K
+sys.stderr = stderr
+
 sess = tf.Session()
 K.set_session(sess)
 from keras.models import load_model
 from ptsne import KLdivergence
 
-# don't output info from Caffe to console
+# suppress info from Caffe to console
 os.environ['GLOG_minloglevel'] = '2'
 import caffe
 
@@ -98,6 +107,7 @@ class Embedding_model:
 
 	def __init__(self, process_id):
 		models = self.MODEL_MAP[process_id]
+		self.loaded_models = False
 		
 		modelfolder = os.path.join("data/", process_id, "models")
 		if not os.path.exists(modelfolder):
@@ -107,11 +117,15 @@ class Embedding_model:
 		for model in models.values():
 			filename = os.path.join(modelfolder, model['filename'])
 			if not os.path.exists(filename):
-				print "could not find model file '%s', downloading..." % filename
-				response = requests.get(model['source'], stream=True)
-				with open(filename, 'wb') as out_file:
-					for chunk in response.iter_content(chunk_size=128):
-						out_file.write(chunk)
+				logger.info("could not find model file '%s', downloading..." % filename)
+				try:
+					response = requests.get(model['source'], stream=True)
+					with open(filename, 'wb') as out_file:
+						for chunk in response.iter_content(chunk_size=128):
+							out_file.write(chunk)
+				except RequestException:
+					logger.error("could not download model file '%s', aborting embedding..." % filename)
+					return None
 
 		caffe_model_definition = os.path.join(modelfolder, models['caffe_model_definition']['filename'])
 		caffe_model_weights = os.path.join(modelfolder, models['caffe_model_weights']['filename'])
@@ -123,6 +137,8 @@ class Embedding_model:
 
 		# initialize t-sne
 		self.tsne = load_model(keras_ptsne_model, custom_objects={'KLdivergence' : KLdivergence})
+
+		self.loaded_models = True
 
 	def net_weights(self, image):
 		input_image = caffe.io.load_image(image)
@@ -147,24 +163,26 @@ class Embedding_model:
 		return embedding
 
 def embed_new(options):
-	print "- Embedding %s" % options['process_id']
+	logger.info("- Embedding %s" % options['process_id'])
 	
 	# get net models and tsne
 	embedder = Embedding_model(options['process_id'])
+	if not embedder.loaded_models:
+		return None
 
 	images_root = 'data/%s/images/' % options['process_id']
 
 	csv_file = open(os.path.join('data/', options['process_id'], 'embeddings.csv'),'a')
 	csv_writer = csv.writer(csv_file)
 
-	my_collection = options['collection']
-	works_to_embed = my_collection.get_works_to_embed()
-	print "- embedding %d images" % (len(works_to_embed))
+	collection = options['collection']
+	works_to_embed = collection.get_works_to_embed()
+	logger.info("- embedding %d images" % (len(works_to_embed)))
 	for work in works_to_embed:
-		sequence_id = work[collection.FIELDS['sequence_id']]
+		sequence_id = work['sequence_id']
 
 		work_image = images_root + str(sequence_id).zfill(4) + ".jpg"
 		embedding = embedder.embed(work_image)
 		csv_writer.writerow([work_image] + embedding)
 
-		my_collection.add_embedding(sequence_id)
+		collection.add_embedding(sequence_id)
