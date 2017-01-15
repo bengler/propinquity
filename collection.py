@@ -14,7 +14,13 @@ class Collection:
 		'published_at',
 		'image_id',
 		'image_downloaded',
-		'embedded'
+		'embedded',
+		'artist',
+		'title',
+		'year_start',
+		'year_end',
+		'image_width',
+		'image_height',
 	]
 
 	def __init__(self, collection_id):
@@ -24,7 +30,7 @@ class Collection:
 		self.modified = False
 
 		if os.path.isfile(self.collection_filename):
-			self.works = pd.read_csv(self.collection_filename) \
+			self.works = pd.read_csv(self.collection_filename, encoding='utf-8') \
 				.transpose().to_dict().values()
 			logger.info("\n\nInstanced %s collection from file" % collection_id)
 		else:
@@ -63,7 +69,8 @@ class Collection:
 	def write(self):
 		if self.modified:
 			pd.DataFrame(self.works).to_csv(
-				self.collection_filename, index=False, columns=self.FIELDS)
+				self.collection_filename, index=False, columns=self.FIELDS,
+				encoding='utf-8')
 			self.modified = False
 
 			logger.info("%d new works written to file" % self.newWorksFound)
@@ -79,8 +86,12 @@ class Collection:
 
 		return found_works
 
-	def add_image(self, sequence_id):
-		self.works[int(sequence_id) - 1]['image_downloaded'] = 1
+	def add_image(self, sequence_id, img_width, img_height):
+		work = self.works[int(sequence_id) - 1]
+		work['image_downloaded'] = 1
+		work['image_width'] = img_width
+		work['image_height'] = img_height
+
 		self.modified = True
 
 		return None
