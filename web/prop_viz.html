@@ -46,12 +46,6 @@
 
 		<script>
 
-			// new dict
-			var new_dict = {}
-			for (var i = 0;i < tsne_map.length;i++) {
-				new_dict[tsne_map[i]["filename"].split("/").pop()] = tsne_map[i]["coordinates"];
-			}
-
 			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 			var container, stats;
@@ -67,19 +61,6 @@
 			var pos;
 
 			var currentIntersectFace = -1;
-			
-			// get min x in tsne, get max x in tsne, etc, then insert into domain
-			var max_coord_x = -Infinity;
-			var min_coord_x = Infinity;
-			var max_coord_y = -Infinity;
-			var min_coord_y = Infinity;
-			for (let i = 0;i < tsne_map.length;i++) {
-				var cur_coord = tsne_map[i]['coordinates'];
-				if (cur_coord[0] > max_coord_x) max_coord_x = cur_coord[0];
-				if (cur_coord[0] < min_coord_x) min_coord_x = cur_coord[0];
-				if (cur_coord[1] > max_coord_y) max_coord_y = cur_coord[1];
-				if (cur_coord[1] < min_coord_y) min_coord_y = cur_coord[1];
-			}
 
       		var fisheye = d3.fisheye.circular().radius(200).distortion(5);
 
@@ -111,11 +92,6 @@
 					planeMesh.updateMatrix();
 					singleGeometry.merge(planeMesh.geometry, planeMesh.matrix);
 				}
-				/*//var material = new THREE.MeshPhongMaterial( { map : texture});
-				var material = new THREE.MeshBasicMaterial( {color: 0xffaa00} );
-				var mesh = new THREE.Mesh(singleGeometry, material);
-				scene.add(mesh)
-				debugger;*/
 
 				// then load texture
 				var texture = new THREE.TextureLoader().load(
