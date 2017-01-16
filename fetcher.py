@@ -19,11 +19,24 @@ def fetch_work_details(options):
 		image_id = result['artifact.defaultMediaIdentifier']
 		object_id = result['identifier.id']
 		published_at = result['artifact.publishedDate']
+		artist = result['artifact.ingress.producer']
+		title = result['artifact.ingress.title']
+		year_start = result['artifact.ingress.production.fromYear'] if 'artifact.ingress.production.fromYear' in result else None
+		year_end = result['artifact.ingress.production.toYear'] if 'artifact.ingress.production.toYear' in result else None
 
 		work = {
-			'sequence_id': None, 'identifier': object_id,
-			'published_at': published_at, 'image_id': image_id, 
-			'image_downloaded': 0, 'embedded': 0
+			'sequence_id': None, 
+			'identifier': object_id,
+			'published_at': published_at, 
+			'image_id': image_id, 
+			'image_downloaded': 0, 
+			'embedded': 0,
+			'artist' : artist,
+			'title' : title,
+			'year_start' : year_start,
+			'year_end' : year_end,
+			'image_width' : 0,
+			'image_height' : 0,
 		}
 		return work
 	else:
@@ -41,11 +54,14 @@ def fetch_image(options):
 	res = requests.get(img_url)
 	if res.status_code == 200:
 		try:
-			img = Image.open(StringIO(res.content)).load()
+			img = Image.open(StringIO(res.content))
+			img.load()
+			img_width, img_height = img.size
 		except:
 			logger.warning("the server returned an invalid image from url %s" % img_url)
 			return None
-		return {'sequence_id' : sequence_id, 'image_data' : res.content}
+		return {'sequence_id' : sequence_id, 'image_data' : res.content, \
+			'image_width' : img_width, 'image_height' : img_height}
 	else:
 		logger.warning("failed downloading images from url %s" % img_url)
 
@@ -87,7 +103,7 @@ def fetch_new(options):
 				with open(download_folder + str(result['sequence_id']).zfill(4)+".jpg", 'wb') as f:
 					f.write(result['image_data'])
 
-				collection.add_image(result['sequence_id'])
+				collection.add_image(result['sequence_id'], result['image_width'], result['image_height'])
 
 	# get details of new works
 	for r in range(0,numresults,10):
