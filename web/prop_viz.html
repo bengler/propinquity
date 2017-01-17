@@ -198,7 +198,15 @@
 				window.addEventListener( 'resize', onWindowResize, false );
 				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 				//document.addEventListener( 'mousewheel', onMouseWheel, false);
+				//renderer.domElement.addEventListener( 'click', onCanvasClick, false);
 
+			}
+
+			function onCanvasClick() {
+				if (currentIntersectFace >= 0) {
+					var work_url = "http://samling.nasjonalmuseet.no/no/object/"+collection[currentIntersectFace/4].identifier
+					window.open(work_url, '_blank');
+				}
 			}
 
 			function onWindowResize() {
