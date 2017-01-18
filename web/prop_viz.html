@@ -48,6 +48,10 @@
 				color: #0080ff;
 			}
 
+			.clickable {
+				cursor : pointer;
+			}
+
 		</style>
 	</head>
 	<body>
@@ -104,6 +108,8 @@
 			}
 
 			var tileSize = 20; // initial size of works
+
+			var mouse_down_init_position;
 
 			function init() {
 
@@ -184,7 +190,7 @@
 				controls.minDistance = 200;
 				controls.maxDistance = 2000;
 				controls.noRotate = true;
-				//controls.noZoom = true;
+				controls.noZoom = true;
 
 				//
 
@@ -197,13 +203,25 @@
 
 				window.addEventListener( 'resize', onWindowResize, false );
 				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-				//document.addEventListener( 'mousewheel', onMouseWheel, false);
-				//renderer.domElement.addEventListener( 'click', onCanvasClick, false);
+				document.addEventListener( 'mousewheel', onMouseWheel, false);
+				renderer.domElement.addEventListener( 'mousedown', onWebGLMouseDown, false);
+				renderer.domElement.addEventListener( 'mouseup', onWebGLMouseUp, false);
 
 			}
 
-			function onCanvasClick() {
-				if (currentIntersectFace >= 0) {
+			function onWebGLMouseDown( event ) {
+				var x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				var y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+				mouse_down_init_position = [mouse.x, mouse.y];
+			}
+
+			function onWebGLMouseUp( event ) {
+				var x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				var y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+				var old_x = mouse_down_init_position[0];
+				var old_y = mouse_down_init_position[1];
+				var distance = Math.sqrt((x-old_x)*(x-old_x) + (y-old_y)*(y-old_y));
+				if (currentIntersectFace >= 0 && distance < 0.01) {
 					var work_url = "http://samling.nasjonalmuseet.no/no/object/"+collection[currentIntersectFace/4].identifier
 					window.open(work_url, '_blank');
 				}
@@ -293,6 +311,7 @@
 						var metadata = collection[face_index/4];
 						$("#imageinfo").html("<p><strong>"+metadata.artist+", <em>"+metadata.title+"</em></strong>. "+metadata.year_start+".</p>")
 						$("#imageinfo").show();
+						$("#container").addClass("clickable");
 						currentIntersectFace = face_index;
 						singleGeometry.verticesNeedUpdate = true;
 					} else if (face_index != currentIntersectFace) {
@@ -309,6 +328,7 @@
 					for (var i = 0;i < 4;i++) singleGeometry.vertices[currentIntersectFace+i].z = 0.0;
 					currentIntersectFace = -1;
 					$("#imageinfo").hide();
+					$("#container").removeClass("clickable");
 					singleGeometry.verticesNeedUpdate = true;
 				}
 
