@@ -309,7 +309,7 @@
 						// entering tile
 						for (var i = 0;i < 4;i++) singleGeometry.vertices[face_index+i].z = 1.0;
 						var metadata = collection[face_index/4];
-						$("#imageinfo").html("<p><strong>"+metadata.artist+", <em>"+metadata.title+"</em></strong>. "+metadata.year_start+".</p>")
+						$("#imageinfo").html("<p><strong>"+metadata.artist+", <em>"+metadata.title+"</em></strong>. "+metadata.yearstring+".</p>")
 						$("#imageinfo").show();
 						$("#container").addClass("clickable");
 						currentIntersectFace = face_index;
@@ -319,7 +319,7 @@
 						for (var i = 0;i < 4;i++) singleGeometry.vertices[currentIntersectFace+i].z = 0.0;
 						for (var i = 0;i < 4;i++) singleGeometry.vertices[face_index+i].z = 1.0;
 						var metadata = collection[face_index/4];
-						$("#imageinfo").html("<p><strong>"+metadata.artist+", <em>"+metadata.title+"</em></strong>. "+metadata.year_start+".</p>")
+						$("#imageinfo").html("<p><strong>"+metadata.artist+", <em>"+metadata.title+"</em></strong>. "+metadata.yearstring+".</p>")
 						currentIntersectFace = face_index;
 						singleGeometry.verticesNeedUpdate = true;
 					}
