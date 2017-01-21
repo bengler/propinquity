@@ -48,7 +48,6 @@ for entry in orig_json:
 
         del entry['embedded']
         del entry['image_downloaded']
-        del entry['image_id']
         del entry['year_start']
         del entry['year_end']
         output_json.append(entry)

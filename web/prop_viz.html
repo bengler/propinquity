@@ -105,6 +105,8 @@
 				new THREE.Vector2(1.,1.),
 			];
 
+			THREE.ImageUtils.crossOrigin = '';
+
 			function init() {
 
 				container = document.getElementById( 'container' );
@@ -345,8 +347,8 @@
 				var index_str = "" + collection[(index/4)]['sequence_id'];
 				var image_filename = "0000".substring(0, 4 - index_str.length) + index_str;
 				var loader = new THREE.TextureLoader().load(
-					//'https://mm.dimu.org/image/'+collection[index]+'?dimension=400x400',
-					'/data/painting/images/'+image_filename+".jpg",
+					'https://mm.dimu.org/image/'+collection[index/4]['image_id']+'?dimension=400x400',
+					//'/data/painting/images/'+image_filename+".jpg",
 					function (texture) {
 						if (currentIntersectFace == index) {
 							// update texture
