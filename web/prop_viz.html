@@ -61,8 +61,6 @@
 		<div id="imageinfo"></div>
 
 		<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-
-		<!--<script src="js/three.min.js"></script>-->
 		<script src="//cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.min.js"></script>
 		<script src="js/TrackballControls.js"></script>
 
@@ -94,23 +92,16 @@
 
 			var fisheye = d3.fisheye.circular().radius(200).distortion(5);
 
-			// calculate mean coordinates and subtract (this should be done when writing it to json)
-			var x_mean = 0;
-			var y_mean = 0;
-			for (var i = 0;i < collection.length;i++) {
-				x_mean += collection[i].x;
-				y_mean += collection[i].y;
-			}
-			x_mean /= collection.length;
-			y_mean /= collection.length;
-			for (var i = 0;i < collection.length;i++) {
-				collection[i].x -= x_mean;
-				collection[i].y -= y_mean;
-			}
-
 			var tileSize = 20; // initial size of works
 
 			var mouse_down_init_position;
+
+			var unit_coords = [
+				new THREE.Vector2(0,1.),
+				new THREE.Vector2(0,0),
+				new THREE.Vector2(1.,0),
+				new THREE.Vector2(1.,1.),
+			];
 
 			function init() {
 
@@ -362,16 +353,9 @@
 							mesh.material.materials[1].map = texture;
 							mesh.material.materials[1].needsUpdate = true;
 							mesh.material.needsUpdate = true;
-							// change fragment map
-							var coords = [
-								new THREE.Vector2(0,1.),
-								new THREE.Vector2(0,0),
-								new THREE.Vector2(1.,0),
-								new THREE.Vector2(1.,1.),
-							];
 							// map each painting to geometry and position
-							mesh.geometry.faceVertexUvs[0][(index/4)*2] = [ coords[0], coords[1], coords[3] ];
-							mesh.geometry.faceVertexUvs[0][((index/4)*2) + 1] = [ coords[1], coords[2], coords[3] ];
+							mesh.geometry.faceVertexUvs[0][(index/4)*2] = [ unit_coords[0], unit_coords[1], unit_coords[3] ];
+							mesh.geometry.faceVertexUvs[0][((index/4)*2) + 1] = [ unit_coords[1], unit_coords[2], unit_coords[3] ];
 							mesh.geometry.faces[(index/4) * 2].materialIndex = 1;
 							mesh.geometry.faces[(index/4)*2 + 1].materialIndex = 1;
 							mesh.geometry.uvsNeedUpdate = true;

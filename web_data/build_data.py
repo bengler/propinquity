@@ -17,6 +17,12 @@ output_embeddings = pd.read_csv("../data/painting/embeddings.csv", header=None).
 for e,emb in enumerate(output_embeddings):
     orig_json[e]['x'] = emb[1]
     orig_json[e]['y'] = emb[2]
+# center coordinates
+x_mean = sum(entry['x'] for entry in orig_json)/len(orig_json)
+y_mean = sum(entry['y'] for entry in orig_json)/len(orig_json)
+for entry in orig_json:
+    entry['x'] -= x_mean
+    entry['y'] -= y_mean
 
 output_json = []
 
