@@ -4,10 +4,12 @@
 		<title>propinquity</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,400,600,700" rel="stylesheet" type="text/css">
 		<style>
 			body {
 				color: #cccccc;
-				font-family:Monospace;
+				/* font-family:Monospace;*/
+				font-family: Open Sans, "Helvetica Neue", Helvetica, Arial, sans-serif;
 				font-size:13px;
 				text-align:center;
 
@@ -22,8 +24,32 @@
 				padding: 5px;
 			}
 
+			#imageinfo {
+				position: absolute;
+				bottom: 0px;
+				left: 0px;
+				/*margin-left: 40px;*/
+				font-size: 24px;
+				/*color: #292929;*/
+				color : #fff;
+				/*width: 100%;*/
+				background-color: #333;
+				opacity: 0.5;
+				text-align: left;
+				display : none;
+			}
+
+			#imageinfo p {
+				margin-left : 40px;
+				margin-right : 40px;
+			}
+
 			a {
 				color: #0080ff;
+			}
+
+			.clickable {
+				cursor : pointer;
 			}
 
 		</style>
@@ -32,20 +58,22 @@
 
 		<div id="container"></div>
 		<div id="info">propinquity demo</div>
+		<div id="imageinfo"></div>
 
-		<script src="js/three.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.min.js"></script>
 		<script src="js/TrackballControls.js"></script>
-
-		<script src="https://d3js.org/d3.v2.min.js"></script>
+		
+		<script src="//cdnjs.cloudflare.com/ajax/libs/d3/4.4.3/d3.min.js"></script>
 		<script src="js/fisheye.js"></script>
 
 
 		<script src="js/Detector.js"></script>
 		<script src="js/stats.min.js"></script>
 		<script src="tsne_map.js"></script>
+		<script src="painting.js"></script>
 
 		<script>
-
 			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 			var container, stats;
@@ -62,10 +90,22 @@
 
 			var currentIntersectFace = -1;
 
-      		var fisheye = d3.fisheye.circular().radius(200).distortion(5);
+			var fisheye = d3.fisheye.circular().radius(200).distortion(5);
 
-			init();
-			animate();
+			var tileSize = 17; // initial size of works
+
+			var tilesPerDim = 40;
+
+			var mouse_down_init_position;
+
+			var unit_coords = [
+				new THREE.Vector2(0,1.),
+				new THREE.Vector2(0,0),
+				new THREE.Vector2(1.,0),
+				new THREE.Vector2(1.,1.),
+			];
+
+			THREE.ImageUtils.crossOrigin = '';
 
 			function init() {
 
@@ -84,28 +124,33 @@
 
 				// create geometry and merge into one geometry
 				singleGeometry = new THREE.Geometry();
-				for (var i = 0;i < 32*32;i++) {
-					var plane = new THREE.PlaneGeometry( 20, 20 );
+				for (var i = 0;i < tilesPerDim*tilesPerDim;i++) {
+					var area = collection[i]['image_width']*collection[i]['image_height'];
+					var scaling = tileSize/Math.sqrt(area);
+					collection[i]['draw_width'] = Math.round(collection[i]['image_width']*scaling);
+					collection[i]['draw_height'] = Math.round(collection[i]['image_height']*scaling);
+
+					var plane = new THREE.PlaneGeometry( collection[i]['draw_width'], collection[i]['draw_height'] );
 					var planeMesh = new THREE.Mesh(plane);
-					planeMesh.position.x = 50*tsne_map[i]["coordinates"][0];
-					planeMesh.position.y = 50*tsne_map[i]["coordinates"][1];
+					planeMesh.position.x = 3*collection[i]['x'];
+					planeMesh.position.y = 3*collection[i]['y'];
 					planeMesh.updateMatrix();
 					singleGeometry.merge(planeMesh.geometry, planeMesh.matrix);
 				}
 
 				// then load texture
 				var texture = new THREE.TextureLoader().load(
-					"tiled_map_32x32.jpg",
+					"tiled_map_40x40_100.jpg",
 					function(texture) {
 						texture.flipY = false;
 						// clear any uv-mappings
-						singleGeometry.faceVertexUvs[0] = [];	
+						singleGeometry.faceVertexUvs[0] = [];
 						// for each painting
-						for (var i = 0;i < 32*32;i++) {
-							var left = (i % 32)/32.
-    						var upper = Math.floor(i / 32)/32.
-    						var right = left + 1/32.
-    						var lower = upper + 1/32.
+						for (var i = 0;i < tilesPerDim*tilesPerDim;i++) {
+							var left = (i % tilesPerDim)/tilesPerDim
+							var upper = Math.floor(i / tilesPerDim)/tilesPerDim
+							var right = left + 1/tilesPerDim
+							var lower = upper + 1/tilesPerDim
 							var coords = [
 								new THREE.Vector2(left,upper),
 								new THREE.Vector2(left,lower),
@@ -117,11 +162,16 @@
 							singleGeometry.faceVertexUvs[0][(i*2) + 1] = [ coords[1], coords[2], coords[3] ];
 						}
 
-						var material = new THREE.MeshPhongMaterial( { map : texture});
-						//var material = new THREE.MeshBasicMaterial( {color: 0xffaa00} );
+						var mat_1 = new THREE.MeshBasicMaterial( { map : texture});
+						var mat_2 = new THREE.MeshBasicMaterial( {  });
+						var material = new THREE.MultiMaterial( [mat_1, mat_2] );
+
 						mesh = new THREE.Mesh(singleGeometry, material);
 						scene.add(mesh);
-					}
+					}/*,
+					function(xhr) {
+						$('#info').html( (xhr.loaded / xhr.total * 100) + '% loaded' );
+					}*/
 				);
 
 
@@ -141,7 +191,7 @@
 				controls.minDistance = 200;
 				controls.maxDistance = 2000;
 				controls.noRotate = true;
-				//controls.noZoom = true;
+				controls.noZoom = true;
 
 				//
 
@@ -154,8 +204,28 @@
 
 				window.addEventListener( 'resize', onWindowResize, false );
 				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-				//document.addEventListener( 'mousewheel', onMouseWheel, false);
+				document.addEventListener( 'mousewheel', onMouseWheel, false);
+				renderer.domElement.addEventListener( 'mousedown', onWebGLMouseDown, false);
+				renderer.domElement.addEventListener( 'mouseup', onWebGLMouseUp, false);
 
+			}
+
+			function onWebGLMouseDown( event ) {
+				var x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				var y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+				mouse_down_init_position = [mouse.x, mouse.y];
+			}
+
+			function onWebGLMouseUp( event ) {
+				var x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				var y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+				var old_x = mouse_down_init_position[0];
+				var old_y = mouse_down_init_position[1];
+				var distance = Math.sqrt((x-old_x)*(x-old_x) + (y-old_y)*(y-old_y));
+				if (currentIntersectFace >= 0 && distance < 0.01) {
+					var work_url = "http://samling.nasjonalmuseet.no/no/object/"+collection[currentIntersectFace].identifier
+					window.open(work_url, '_blank');
+				}
 			}
 
 			function onWindowResize() {
@@ -177,9 +247,9 @@
 				var vector = new THREE.Vector3();
 
 				vector.set(
-				    ( event.clientX / window.innerWidth ) * 2 - 1,
-				    - ( event.clientY / window.innerHeight ) * 2 + 1,
-				    0.5 );
+					( event.clientX / window.innerWidth ) * 2 - 1,
+					- ( event.clientY / window.innerHeight ) * 2 + 1,
+					0.5 );
 
 				vector.unproject( camera );
 
@@ -192,30 +262,22 @@
 				fisheye.focus([pos.x,pos.y]);
 
 				for (var i = 0;i < singleGeometry.vertices.length;i+=4) {
-					var cur_coords = tsne_map[i/4]["coordinates"];
-					var fisheye_trans = fisheye({x:50*cur_coords[0], y:50*cur_coords[1]});
+					var cur_coords = [collection[i/4]['x'],collection[i/4]['y']];
+					var fisheye_trans = fisheye({x: 3*cur_coords[0], y: 3*cur_coords[1]});
 
-					/*singleGeometry.vertices[i].x = fisheye_trans.x;
-					singleGeometry.vertices[i].y = (fisheye_trans.y + 30);
-					singleGeometry.vertices[i+1].x = (fisheye_trans.x + 30);
-					singleGeometry.vertices[i+1].y = (fisheye_trans.y +30);
-					singleGeometry.vertices[i+2].x = fisheye_trans.x;
-					singleGeometry.vertices[i+2].y = fisheye_trans.y;
-					singleGeometry.vertices[i+3].x = (fisheye_trans.x + 30);
-					singleGeometry.vertices[i+3].y = fisheye_trans.y;*/
+					var x_size = collection[i/4]['draw_width']/2
+					var y_size = collection[i/4]['draw_height']/2
 
-					singleGeometry.vertices[i].x = fisheye_trans.x-10-((fisheye_trans.z-1)*0.7*15);
-					singleGeometry.vertices[i].y = fisheye_trans.y+10+((fisheye_trans.z-1)*0.7*15);
-					singleGeometry.vertices[i+1].x = fisheye_trans.x+10+((fisheye_trans.z-1)*0.7*15);
-					singleGeometry.vertices[i+1].y = fisheye_trans.y+10+((fisheye_trans.z-1)*0.7*15);
-					singleGeometry.vertices[i+2].x = fisheye_trans.x-10-((fisheye_trans.z-1)*0.7*15);
-					singleGeometry.vertices[i+2].y = fisheye_trans.y-10-((fisheye_trans.z-1)*0.7*15);
-					singleGeometry.vertices[i+3].x = fisheye_trans.x+10+((fisheye_trans.z-1)*0.7*15);
-					singleGeometry.vertices[i+3].y = fisheye_trans.y-10-((fisheye_trans.z-1)*0.7*15);
+					singleGeometry.vertices[i].x = fisheye_trans.x-x_size-((fisheye_trans.z-1)*0.7*x_size);
+					singleGeometry.vertices[i].y = fisheye_trans.y+y_size+((fisheye_trans.z-1)*0.7*y_size);
+					singleGeometry.vertices[i+1].x = fisheye_trans.x+x_size+((fisheye_trans.z-1)*0.7*x_size);
+					singleGeometry.vertices[i+1].y = fisheye_trans.y+y_size+((fisheye_trans.z-1)*0.7*y_size);
+					singleGeometry.vertices[i+2].x = fisheye_trans.x-x_size-((fisheye_trans.z-1)*0.7*x_size);
+					singleGeometry.vertices[i+2].y = fisheye_trans.y-y_size-((fisheye_trans.z-1)*0.7*y_size);
+					singleGeometry.vertices[i+3].x = fisheye_trans.x+x_size+((fisheye_trans.z-1)*0.7*x_size);
+					singleGeometry.vertices[i+3].y = fisheye_trans.y-y_size-((fisheye_trans.z-1)*0.7*y_size);
 				}
 				singleGeometry.verticesNeedUpdate = true;
-
-				render();
 
 			}
 
@@ -233,24 +295,45 @@
 
 			function render() {
 
-				// if pointer is over painting, bring it to front
 
 				raycaster.setFromCamera( mouse, camera );
+
+				// updates on entering/leaving tiles
 
 				var intersects = raycaster.intersectObject( mesh );
 
 				if ( intersects.length > 0 ) {
-					var face_index = Math.floor(intersects[0].face.a/4)*4
-					if (face_index != currentIntersectFace && currentIntersectFace >= 0) {
-						for (var i = 0;i < 4;i++) singleGeometry.vertices[currentIntersectFace+i].z = 0.0;
+					var face_index = Math.floor(intersects[0].face.a/4);
+					if (currentIntersectFace == -1) {
+						// entering tile
+						for (var i = 0;i < 4;i++) singleGeometry.vertices[(face_index*4)+i].z = 1.0;
+						var metadata = collection[face_index];
+						$("#imageinfo").html("<p><strong>"+metadata.artist+", <em>"+metadata.title+"</em></strong>. "+metadata.yearstring+".</p>")
+						$("#imageinfo").show();
+						$("#container").addClass("clickable");
+						currentIntersectFace = face_index;
+						// set timeout to avoid queuing lots of images on panning
+						setTimeout(function() {if (currentIntersectFace == face_index) getHighResImage(face_index);}, 100);
+						singleGeometry.verticesNeedUpdate = true;
+					} else if (face_index != currentIntersectFace) {
+						// entering tile, leaving previous tile
+						for (var i = 0;i < 4;i++) singleGeometry.vertices[(currentIntersectFace*4)+i].z = 0.0;
+						for (var i = 0;i < 4;i++) singleGeometry.vertices[(face_index*4)+i].z = 1.0;
+						var metadata = collection[face_index];
+						$("#imageinfo").html("<p><strong>"+metadata.artist+", <em>"+metadata.title+"</em></strong>. "+metadata.yearstring+".</p>")
+						removeHighResImage(currentIntersectFace);
+						currentIntersectFace = face_index;
+						// set timeout to avoid queuing lots of images on panning
+						setTimeout(function() {if (currentIntersectFace == face_index) getHighResImage(face_index);}, 100);
+						singleGeometry.verticesNeedUpdate = true;
 					}
-					for (var i = 0;i < 4;i++) singleGeometry.vertices[face_index+i].z = 1.0;
-					currentIntersectFace = face_index;
-					
-					singleGeometry.verticesNeedUpdate = true;
 				} else if (currentIntersectFace != -1) {
-					for (var i = 0;i < 4;i++) singleGeometry.vertices[currentIntersectFace+i].z = 0.0;
+					// leaving tile
+					for (var i = 0;i < 4;i++) singleGeometry.vertices[(currentIntersectFace*4)+i].z = 0.0;
+					removeHighResImage(currentIntersectFace);
 					currentIntersectFace = -1;
+					$("#imageinfo").hide();
+					$("#container").removeClass("clickable");
 					singleGeometry.verticesNeedUpdate = true;
 				}
 
@@ -260,12 +343,59 @@
 
 			}
 
+			function getHighResImage(index) {
+				var index_str = "" + collection[index]['sequence_id'];
+				var image_filename = "0000".substring(0, 4 - index_str.length) + index_str;
+				var loader = new THREE.TextureLoader().load(
+					'https://mm.dimu.org/image/'+collection[index]['image_id']+'?dimension=400x400',
+					//'/data/painting/images/'+image_filename+".jpg",
+					function (texture) {
+						if (currentIntersectFace == index) {
+							// update texture
+							mesh.material.materials[1].map = texture;
+							mesh.material.materials[1].needsUpdate = true;
+							mesh.material.needsUpdate = true;
+							// map each painting to geometry and position
+							mesh.geometry.faceVertexUvs[0][index*2] = [ unit_coords[0], unit_coords[1], unit_coords[3] ];
+							mesh.geometry.faceVertexUvs[0][(index*2) + 1] = [ unit_coords[1], unit_coords[2], unit_coords[3] ];
+							mesh.geometry.faces[index * 2].materialIndex = 1;
+							mesh.geometry.faces[(index*2) + 1].materialIndex = 1;
+							mesh.geometry.uvsNeedUpdate = true;
+							mesh.geometry.elementsNeedUpdate = true;
+							mesh.geometry.groupsNeedUpdate = true;
+						}
+					}
+				);
+			}
+
+			function removeHighResImage(index) {
+				highResImageIndex = -1;
+				var i = index;
+				var left = (i % tilesPerDim)/tilesPerDim
+				var upper = Math.floor(i / tilesPerDim)/tilesPerDim
+				var right = left + 1/tilesPerDim
+				var lower = upper + 1/tilesPerDim
+				var coords = [
+					new THREE.Vector2(left,upper),
+					new THREE.Vector2(left,lower),
+					new THREE.Vector2(right,lower),
+					new THREE.Vector2(right,upper),
+				];
+				mesh.geometry.faceVertexUvs[0][index*2] = [ coords[0], coords[1], coords[3] ];
+				mesh.geometry.faceVertexUvs[0][(index*2) + 1] = [ coords[1], coords[2], coords[3] ];
+				mesh.geometry.faces[index * 2].materialIndex = 0;
+				mesh.geometry.faces[(index*2) + 1].materialIndex = 0;
+				mesh.geometry.uvsNeedUpdate = true;
+				mesh.geometry.elementsNeedUpdate = true;
+				mesh.geometry.groupsNeedUpdate = true;
+			}
+
 			function onMouseWheel(event) {
 				var factor = 50;
 
-		        var mX = ( event.clientX / window.innerWidth ) * 2 - 1;
-		        var mY = - ( event.clientY / window.innerHeight ) * 2 + 1;
-		        var vector = new THREE.Vector3(mX, mY, 1 );
+				var mX = ( event.clientX / window.innerWidth ) * 2 - 1;
+				var mY = - ( event.clientY / window.innerHeight ) * 2 + 1;
+				var vector = new THREE.Vector3(mX, mY, 1 );
 				vector.unproject(camera);
 				vector.sub(camera.position);
 				if (event.deltaY < 0) {
@@ -276,6 +406,9 @@
 					controls.target.subVectors(controls.target, vector.setLength(factor));
 				}
 			}
+
+			init();
+			animate();
 
 		</script>
 
