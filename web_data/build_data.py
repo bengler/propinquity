@@ -60,12 +60,12 @@ of.close()
 
 # create tiled image for webgl (test with 100 by 100 images)
 print "drawing out"
-S = 3200 # size of canvas
+S = 4000 # size of canvas
 tiles = Image.new("RGB",(S,S))
 s = 100 # size of every tile
 added_images = 0
 for i,entry in enumerate(output_json):
-    if added_images == 1024:
+    if added_images == 1600:
         break
     filename = "../data/painting/images/"+str(entry['sequence_id']).zfill(4)+".jpg"
     try:
@@ -75,10 +75,10 @@ for i,entry in enumerate(output_json):
     	print "image %s could not be loaded" % filename
     	continue
 
-    left = (i % 32)*100
-    upper = (i / 32)*100
+    left = (i % 40)*100
+    upper = (i / 40)*100
     right = left + 100
     lower = upper + 100
     tiles.paste(I,(left, upper, right, lower))
     added_images += 1
-tiles.save("tiled_map_32x32_100.jpg")
+tiles.save("tiled_map_40x40_100.jpg")

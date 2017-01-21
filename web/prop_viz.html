@@ -92,7 +92,9 @@
 
 			var fisheye = d3.fisheye.circular().radius(200).distortion(5);
 
-			var tileSize = 20; // initial size of works
+			var tileSize = 17; // initial size of works
+
+			var tilesPerDim = 40;
 
 			var mouse_down_init_position;
 
@@ -120,7 +122,7 @@
 
 				// create geometry and merge into one geometry
 				singleGeometry = new THREE.Geometry();
-				for (var i = 0;i < 32*32;i++) {
+				for (var i = 0;i < tilesPerDim*tilesPerDim;i++) {
 					var area = collection[i]['image_width']*collection[i]['image_height'];
 					var scaling = tileSize/Math.sqrt(area);
 					collection[i]['draw_width'] = Math.round(collection[i]['image_width']*scaling);
@@ -136,17 +138,17 @@
 
 				// then load texture
 				var texture = new THREE.TextureLoader().load(
-					"tiled_map_32x32_100.jpg",
+					"tiled_map_40x40_100.jpg",
 					function(texture) {
 						texture.flipY = false;
 						// clear any uv-mappings
 						singleGeometry.faceVertexUvs[0] = [];
 						// for each painting
-						for (var i = 0;i < 32*32;i++) {
-							var left = (i % 32)/32.
-							var upper = Math.floor(i / 32)/32.
-							var right = left + 1/32.
-							var lower = upper + 1/32.
+						for (var i = 0;i < tilesPerDim*tilesPerDim;i++) {
+							var left = (i % tilesPerDim)/tilesPerDim
+							var upper = Math.floor(i / tilesPerDim)/tilesPerDim
+							var right = left + 1/tilesPerDim
+							var lower = upper + 1/tilesPerDim
 							var coords = [
 								new THREE.Vector2(left,upper),
 								new THREE.Vector2(left,lower),
@@ -275,8 +277,6 @@
 				}
 				singleGeometry.verticesNeedUpdate = true;
 
-				render();
-
 			}
 
 
@@ -369,10 +369,10 @@
 			function removeHighResImage(index) {
 				highResImageIndex = -1;
 				var i = index/4;
-				var left = (i % 32)/32.
-				var upper = Math.floor(i / 32)/32.
-				var right = left + 1/32.
-				var lower = upper + 1/32.
+				var left = (i % tilesPerDim)/tilesPerDim
+				var upper = Math.floor(i / tilesPerDim)/tilesPerDim
+				var right = left + 1/tilesPerDim
+				var lower = upper + 1/tilesPerDim
 				var coords = [
 					new THREE.Vector2(left,upper),
 					new THREE.Vector2(left,lower),
