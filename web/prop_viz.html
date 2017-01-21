@@ -223,7 +223,7 @@
 				var old_y = mouse_down_init_position[1];
 				var distance = Math.sqrt((x-old_x)*(x-old_x) + (y-old_y)*(y-old_y));
 				if (currentIntersectFace >= 0 && distance < 0.01) {
-					var work_url = "http://samling.nasjonalmuseet.no/no/object/"+collection[currentIntersectFace/4].identifier
+					var work_url = "http://samling.nasjonalmuseet.no/no/object/"+collection[currentIntersectFace].identifier
 					window.open(work_url, '_blank');
 				}
 			}
@@ -303,11 +303,11 @@
 				var intersects = raycaster.intersectObject( mesh );
 
 				if ( intersects.length > 0 ) {
-					var face_index = Math.floor(intersects[0].face.a/4)*4
+					var face_index = Math.floor(intersects[0].face.a/4);
 					if (currentIntersectFace == -1) {
 						// entering tile
-						for (var i = 0;i < 4;i++) singleGeometry.vertices[face_index+i].z = 1.0;
-						var metadata = collection[face_index/4];
+						for (var i = 0;i < 4;i++) singleGeometry.vertices[(face_index*4)+i].z = 1.0;
+						var metadata = collection[face_index];
 						$("#imageinfo").html("<p><strong>"+metadata.artist+", <em>"+metadata.title+"</em></strong>. "+metadata.yearstring+".</p>")
 						$("#imageinfo").show();
 						$("#container").addClass("clickable");
@@ -317,9 +317,9 @@
 						singleGeometry.verticesNeedUpdate = true;
 					} else if (face_index != currentIntersectFace) {
 						// entering tile, leaving previous tile
-						for (var i = 0;i < 4;i++) singleGeometry.vertices[currentIntersectFace+i].z = 0.0;
-						for (var i = 0;i < 4;i++) singleGeometry.vertices[face_index+i].z = 1.0;
-						var metadata = collection[face_index/4];
+						for (var i = 0;i < 4;i++) singleGeometry.vertices[(currentIntersectFace*4)+i].z = 0.0;
+						for (var i = 0;i < 4;i++) singleGeometry.vertices[(face_index*4)+i].z = 1.0;
+						var metadata = collection[face_index];
 						$("#imageinfo").html("<p><strong>"+metadata.artist+", <em>"+metadata.title+"</em></strong>. "+metadata.yearstring+".</p>")
 						removeHighResImage(currentIntersectFace);
 						currentIntersectFace = face_index;
@@ -329,7 +329,7 @@
 					}
 				} else if (currentIntersectFace != -1) {
 					// leaving tile
-					for (var i = 0;i < 4;i++) singleGeometry.vertices[currentIntersectFace+i].z = 0.0;
+					for (var i = 0;i < 4;i++) singleGeometry.vertices[(currentIntersectFace*4)+i].z = 0.0;
 					removeHighResImage(currentIntersectFace);
 					currentIntersectFace = -1;
 					$("#imageinfo").hide();
@@ -344,10 +344,10 @@
 			}
 
 			function getHighResImage(index) {
-				var index_str = "" + collection[(index/4)]['sequence_id'];
+				var index_str = "" + collection[index]['sequence_id'];
 				var image_filename = "0000".substring(0, 4 - index_str.length) + index_str;
 				var loader = new THREE.TextureLoader().load(
-					'https://mm.dimu.org/image/'+collection[index/4]['image_id']+'?dimension=400x400',
+					'https://mm.dimu.org/image/'+collection[index]['image_id']+'?dimension=400x400',
 					//'/data/painting/images/'+image_filename+".jpg",
 					function (texture) {
 						if (currentIntersectFace == index) {
@@ -356,10 +356,10 @@
 							mesh.material.materials[1].needsUpdate = true;
 							mesh.material.needsUpdate = true;
 							// map each painting to geometry and position
-							mesh.geometry.faceVertexUvs[0][(index/4)*2] = [ unit_coords[0], unit_coords[1], unit_coords[3] ];
-							mesh.geometry.faceVertexUvs[0][((index/4)*2) + 1] = [ unit_coords[1], unit_coords[2], unit_coords[3] ];
-							mesh.geometry.faces[(index/4) * 2].materialIndex = 1;
-							mesh.geometry.faces[(index/4)*2 + 1].materialIndex = 1;
+							mesh.geometry.faceVertexUvs[0][index*2] = [ unit_coords[0], unit_coords[1], unit_coords[3] ];
+							mesh.geometry.faceVertexUvs[0][(index*2) + 1] = [ unit_coords[1], unit_coords[2], unit_coords[3] ];
+							mesh.geometry.faces[index * 2].materialIndex = 1;
+							mesh.geometry.faces[(index*2) + 1].materialIndex = 1;
 							mesh.geometry.uvsNeedUpdate = true;
 							mesh.geometry.elementsNeedUpdate = true;
 							mesh.geometry.groupsNeedUpdate = true;
@@ -370,7 +370,7 @@
 
 			function removeHighResImage(index) {
 				highResImageIndex = -1;
-				var i = index/4;
+				var i = index;
 				var left = (i % tilesPerDim)/tilesPerDim
 				var upper = Math.floor(i / tilesPerDim)/tilesPerDim
 				var right = left + 1/tilesPerDim
@@ -381,10 +381,10 @@
 					new THREE.Vector2(right,lower),
 					new THREE.Vector2(right,upper),
 				];
-				mesh.geometry.faceVertexUvs[0][(index/4)*2] = [ coords[0], coords[1], coords[3] ];
-				mesh.geometry.faceVertexUvs[0][((index/4)*2) + 1] = [ coords[1], coords[2], coords[3] ];
-				mesh.geometry.faces[(index/4) * 2].materialIndex = 0;
-				mesh.geometry.faces[(index/4)*2 + 1].materialIndex = 0;
+				mesh.geometry.faceVertexUvs[0][index*2] = [ coords[0], coords[1], coords[3] ];
+				mesh.geometry.faceVertexUvs[0][(index*2) + 1] = [ coords[1], coords[2], coords[3] ];
+				mesh.geometry.faces[index * 2].materialIndex = 0;
+				mesh.geometry.faces[(index*2) + 1].materialIndex = 0;
 				mesh.geometry.uvsNeedUpdate = true;
 				mesh.geometry.elementsNeedUpdate = true;
 				mesh.geometry.groupsNeedUpdate = true;
