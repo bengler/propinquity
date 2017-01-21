@@ -319,7 +319,8 @@
 						$("#imageinfo").show();
 						$("#container").addClass("clickable");
 						currentIntersectFace = face_index;
-						getHighResImage(face_index);
+						// set timeout to avoid queuing lots of images on panning
+						setTimeout(function() {if (currentIntersectFace == face_index) getHighResImage(face_index);}, 100);
 						singleGeometry.verticesNeedUpdate = true;
 					} else if (face_index != currentIntersectFace) {
 						// entering tile, leaving previous tile
@@ -328,8 +329,9 @@
 						var metadata = collection[face_index/4];
 						$("#imageinfo").html("<p><strong>"+metadata.artist+", <em>"+metadata.title+"</em></strong>. "+metadata.yearstring+".</p>")
 						removeHighResImage(currentIntersectFace);
-						getHighResImage(face_index);
 						currentIntersectFace = face_index;
+						// set timeout to avoid queuing lots of images on panning
+						setTimeout(function() {if (currentIntersectFace == face_index) getHighResImage(face_index);}, 100);
 						singleGeometry.verticesNeedUpdate = true;
 					}
 				} else if (currentIntersectFace != -1) {
@@ -348,17 +350,14 @@
 
 			}
 
-			var highResImageIndex = -1;
-
 			function getHighResImage(index) {
 				var index_str = "" + collection[(index/4)]['sequence_id'];
 				var image_filename = "0000".substring(0, 4 - index_str.length) + index_str;
-				highResImageIndex = index;
 				var loader = new THREE.TextureLoader().load(
 					//'https://mm.dimu.org/image/'+collection[index]+'?dimension=400x400',
 					'/data/painting/images/'+image_filename+".jpg",
 					function (texture) {
-						if (highResImageIndex == index) {
+						if (currentIntersectFace == index) {
 							// update texture
 							mesh.material.materials[1].map = texture;
 							mesh.material.materials[1].needsUpdate = true;
