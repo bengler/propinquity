@@ -8,7 +8,7 @@
 THREE.TrackballControls = function ( object, domElement ) {
 
 	var _this = this;
-	var STATE = { NONE: - 1, ROTATE: 2, ZOOM: 1, PAN: 0, TOUCH_ROTATE: 3, TOUCH_ZOOM_PAN: 4 };
+	var STATE = { NONE: - 1, ROTATE: 2, ZOOM: 1, PAN: 0, TOUCH_PAN: 3, TOUCH_ZOOM: 4 };
 
 	this.object = object;
 	this.domElement = ( domElement !== undefined ) ? domElement : document;
@@ -27,6 +27,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 	this.noRotate = false;
 	this.noZoom = false;
 	this.noPan = false;
+	this.noMouseZoom = false;
 
 	this.staticMoving = true;
 	//this.staticMoving = false;
@@ -207,7 +208,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 		var factor;
 
-		if ( _state === STATE.TOUCH_ZOOM_PAN ) {
+		if ( _state === STATE.TOUCH_ZOOM ) {
 
 			factor = _touchZoomDistanceStart / _touchZoomDistanceEnd;
 			_touchZoomDistanceStart = _touchZoomDistanceEnd;
@@ -409,7 +410,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 			_moveCurr.copy( getMouseOnCircle( event.pageX, event.pageY ) );
 			_movePrev.copy( _moveCurr );
 
-		} else if ( _state === STATE.ZOOM && ! _this.noZoom ) {
+		} else if ( _state === STATE.ZOOM && ! _this.noZoom && ! _this.noMouseZoom) {
 
 			_zoomStart.copy( getMouseOnScreen( event.pageX, event.pageY ) );
 			_zoomEnd.copy( _zoomStart );
@@ -437,7 +438,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 			_movePrev.copy( _moveCurr );
 			_moveCurr.copy( getMouseOnCircle( event.pageX, event.pageY ) );
 
-		} else if ( _state === STATE.ZOOM && ! _this.noZoom ) {
+		} else if ( _state === STATE.ZOOM && ! _this.noZoom && ! _this.noMouseZoom ) {
 
 			_zoomEnd.copy( getMouseOnScreen( event.pageX, event.pageY ) );
 
@@ -465,25 +466,29 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 		if ( _this.enabled === false ) return;
 
-		var delta = 0;
+		if ( ! _this.noMouseZoom ) {
 
-		if ( event.wheelDelta ) {
+			var delta = 0;
 
-			// WebKit / Opera / Explorer 9
+			if ( event.wheelDelta ) {
 
-			delta = event.wheelDelta / 40;
+				// WebKit / Opera / Explorer 9
 
-		} else if ( event.detail ) {
+				delta = event.wheelDelta / 40;
 
-			// Firefox
+			} else if ( event.detail ) {
 
-			delta = - event.detail / 3;
+				// Firefox
+
+				delta = - event.detail / 3;
+
+			}
+
+			_zoomStart.y += delta * 0.01;
+			_this.dispatchEvent( startEvent );
+			_this.dispatchEvent( endEvent );
 
 		}
-
-		_zoomStart.y += delta * 0.01;
-		_this.dispatchEvent( startEvent );
-		_this.dispatchEvent( endEvent );
 
 	}
 
@@ -494,21 +499,18 @@ THREE.TrackballControls = function ( object, domElement ) {
 		switch ( event.touches.length ) {
 
 			case 1:
-				_state = STATE.TOUCH_ROTATE;
-				_moveCurr.copy( getMouseOnCircle( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY ) );
-				_movePrev.copy( _moveCurr );
+				_state = STATE.TOUCH_PAN;
+				var x = ( event.touches[ 0 ].pageX );
+				var y = ( event.touches[ 0 ].pageY );
+				_panStart.copy( getMouseOnScreen( x, y ) );
+				_panEnd.copy( _panStart );
 				break;
 
 			default: // 2 or more
-				_state = STATE.TOUCH_ZOOM_PAN;
+				_state = STATE.TOUCH_ZOOM;
 				var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
 				var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
 				_touchZoomDistanceEnd = _touchZoomDistanceStart = Math.sqrt( dx * dx + dy * dy );
-
-				var x = ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX ) / 2;
-				var y = ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY ) / 2;
-				_panStart.copy( getMouseOnScreen( x, y ) );
-				_panEnd.copy( _panStart );
 				break;
 
 		}
@@ -521,21 +523,21 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 		if ( _this.enabled === false ) return;
 
+		event.preventDefault();
+		event.stopPropagation();
+
 		switch ( event.touches.length ) {
 
 			case 1:
-				_movePrev.copy( _moveCurr );
-				_moveCurr.copy( getMouseOnCircle( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY ) );
+				var x = ( event.touches[ 0 ].pageX );
+				var y = ( event.touches[ 0 ].pageY );
+				_panEnd.copy( getMouseOnScreen( x, y ) );
 				break;
 
 			default: // 2 or more
 				var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
 				var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
 				_touchZoomDistanceEnd = Math.sqrt( dx * dx + dy * dy );
-
-				var x = ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX ) / 2;
-				var y = ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY ) / 2;
-				_panEnd.copy( getMouseOnScreen( x, y ) );
 				break;
 
 		}
@@ -553,9 +555,11 @@ THREE.TrackballControls = function ( object, domElement ) {
 				break;
 
 			case 1:
-				_state = STATE.TOUCH_ROTATE;
-				_moveCurr.copy( getMouseOnCircle( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY ) );
-				_movePrev.copy( _moveCurr );
+				_state = STATE.TOUCH_PAN;
+				var x = ( event.touches[ 0 ].pageX );
+				var y = ( event.touches[ 0 ].pageY );
+				_panStart.copy( getMouseOnScreen( x, y ) );
+				_panEnd.copy( _panStart );
 				break;
 
 		}
