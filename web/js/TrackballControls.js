@@ -245,7 +245,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 		return function panCamera() {
 
 			mouseChange.copy( _panEnd ).sub( _panStart );
-			
+
 			// mai panning fix
 			/*var screenSize = new THREE.Vector2();
 			screenSize.x = _this.screen.width*0.0007;
@@ -254,13 +254,28 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 			if ( mouseChange.lengthSq() ) {
 
-				mouseChange.multiplyScalar( _eye.length() * _this.panSpeed );
+				/*mouseChange.multiplyScalar(2).subScalar(1);
+				var vector = new THREE.Vector3(mouseChange.x, -mouseChange.y, 0.5);
+				vector.unproject( _this.object );
+				var dir = vector.sub( _this.object.position ).normalize();
+				var distance = - _this.object.position.z / dir.z;
+				var pos = _this.object.position.clone().add( dir.multiplyScalar( distance ) );*/
+				var pe = getPlanePos(_panEnd);
+				var ps = getPlanePos(_panStart);
 
-				pan.copy( _eye ).cross( _this.object.up ).setLength( mouseChange.x );
-				pan.add( objectUp.copy( _this.object.up ).setLength( mouseChange.y ) );
+				//mouseChange.multiplyScalar( _eye.length() * _this.panSpeed );
+				//mouseChange.x = pe.x - ps.x;
+				//mouseChange.y = pe.y - ps.y;
 
+				pan.copy( _eye ).cross( _this.object.up ).setLength( pe.x - ps.x );
+				pan.add( objectUp.copy( _this.object.up ).setLength( pe.y - ps.y ) );
+				/*pan.copy( _eye ).cross( _this.object.up ).setLength( mouseChange.x );
+				pan.add( objectUp.copy( _this.object.up ).setLength( mouseChange.y ) );*/
+
+				//debugger;
 				_this.object.position.add( pan );
 				_this.target.add( pan );
+
 
 				if ( _this.staticMoving ) {
 
@@ -277,6 +292,15 @@ THREE.TrackballControls = function ( object, domElement ) {
 		};
 
 	}() );
+
+	function getPlanePos(vec2) {
+		var vector = new THREE.Vector3((vec2.x*2)-1, (vec2.y*2)-1, 0.5);
+		vector.unproject( _this.object );
+		var dir = vector.sub( _this.object.position ).normalize();
+		var distance = - _this.object.position.z / dir.z;
+		var pos = _this.object.position.clone().add( dir.multiplyScalar( distance ) );
+		return pos;
+	}
 
 	this.checkDistances = function () {
 
