@@ -36,6 +36,8 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 	this.keys = [ 65 /*A*/, 83 /*S*/, 68 /*D*/ ];
 
+	this.ismousedown = false;
+
 	// internals
 
 	this.target = new THREE.Vector3();
@@ -419,6 +421,8 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 	function mousedown( event ) {
 
+		this.ismousedown = true;
+
 		if ( _this.enabled === false ) return;
 
 		if ( _state === STATE.NONE ) {
@@ -444,8 +448,8 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 		}
 
-		document.addEventListener( 'mousemove', mousemove, false );
-		document.addEventListener( 'mouseup', mouseup, false );
+		document.addEventListener( 'mousemove', mousemove.bind(this), false );
+		document.addEventListener( 'mouseup', mouseup.bind(this), false );
 
 		_this.dispatchEvent( startEvent );
 
@@ -473,6 +477,8 @@ THREE.TrackballControls = function ( object, domElement ) {
 	}
 
 	function mouseup( event ) {
+
+		this.ismousedown = false;
 
 		if ( _this.enabled === false ) return;
 
@@ -616,7 +622,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 	};
 
 	this.domElement.addEventListener( 'contextmenu', contextmenu, false );
-	this.domElement.addEventListener( 'mousedown', mousedown, false );
+	this.domElement.addEventListener( 'mousedown', mousedown.bind(this), false );
 	this.domElement.addEventListener( 'mousewheel', mousewheel, false );
 	this.domElement.addEventListener( 'MozMousePixelScroll', mousewheel, false ); // firefox
 

@@ -244,6 +244,8 @@
 
 				event.preventDefault();
 
+				if (controls.ismousedown) return;
+
 				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
@@ -416,7 +418,7 @@
 						controls.target.subVectors(controls.target, move);
 					}
 				}
-				
+
 			}
 
 			init();
