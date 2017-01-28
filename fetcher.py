@@ -37,6 +37,8 @@ def fetch_work_details(options):
 			'year_end' : year_end,
 			'image_width' : 0,
 			'image_height' : 0,
+			'embedding_x' : 0.0,
+			'embedding_y' : 0.0,
 		}
 		return work
 	else:

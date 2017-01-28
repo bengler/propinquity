@@ -15,45 +15,47 @@ def build_web_files(options):
 					.transpose().to_dict().values()
 
 	# load embedding coordinates
-	output_embeddings = pd.read_csv("data/%s/embeddings.csv" % process, 
-									header=None).transpose().to_dict().values()
-	for e,emb in enumerate(output_embeddings):
-		orig_json[e]['x'] = emb[1]
-		orig_json[e]['y'] = emb[2]
-	# center coordinates
-	x_mean = sum(entry['x'] for entry in orig_json)/len(orig_json)
-	y_mean = sum(entry['y'] for entry in orig_json)/len(orig_json)
-	for entry in orig_json:
-		entry['x'] -= x_mean
-		entry['y'] -= y_mean
+	num_embeddings = 0
+	x_mean = 0.0
+	y_mean = 0.0
+	for work in orig_json:
+		if work['embedded'] == 1:
+			num_embeddings += 1
+			x_mean += work['embedding_x']
+			y_mean += work['embedding_y']
+	x_mean /= num_embeddings
+	y_mean /= num_embeddings
+	for work in orig_json:
+		work['embedding_x'] -= x_mean
+		work['embedding_y'] -= y_mean
 
 	output_json = []
 
-	for entry in orig_json:
-		if 'image_downloaded' in entry and 'embedded' in entry:
+	for work in orig_json:
+		if work['image_downloaded'] == 1 and work['embedded'] == 1:
 			# fix yearstring
-			if entry['year_start'] == entry['year_end']:
-				entry['yearstring'] = str(int(entry['year_start']))
+			if work['year_start'] == work['year_end']:
+				work['yearstring'] = str(int(work['year_start']))
 			else:
-				year_start = str(int(entry['year_start'])) if not math.isnan(entry['year_start']) else ''
-				year_end = str(int(entry['year_end'])) if not math.isnan(entry['year_end']) else ''
-				entry['yearstring'] = year_start+"-"+year_end
-				if len(entry['yearstring']) == 1:
-					entry['yearstring'] = ''
+				year_start = str(int(work['year_start'])) if not math.isnan(work['year_start']) else ''
+				year_end = str(int(work['year_end'])) if not math.isnan(work['year_end']) else ''
+				work['yearstring'] = year_start+"-"+year_end
+				if len(work['yearstring']) == 1:
+					work['yearstring'] = ''
 			
 			# remove all text "[]" from title
-			entry['title'] = re.sub('\[.*?\]','', entry['title']).strip()
+			work['title'] = re.sub('\[.*?\]','', work['title']).strip()
 
 			# change name order
-			names = entry['artist'].split(",")
+			names = work['artist'].split(",")
 			if len(names) > 1:
-				entry['artist'] = names[1].strip()+" "+names[0].strip()
+				work['artist'] = names[1].strip()+" "+names[0].strip()
 
-			del entry['embedded']
-			del entry['image_downloaded']
-			del entry['year_start']
-			del entry['year_end']
-			output_json.append(entry)
+			del work['embedded']
+			del work['image_downloaded']
+			del work['year_start']
+			del work['year_end']
+			output_json.append(work)
 
 	json_string = json.dumps(output_json, indent=2)
 	of = open("data/%s/%s.js" % (process, process),"w")
@@ -66,10 +68,10 @@ def build_web_files(options):
 	tiles = Image.new("RGB",(S,S))
 	s = 100 # size of every tile
 	added_images = 0
-	for i,entry in enumerate(output_json):
+	for i,work in enumerate(output_json):
 		if added_images == 1600:
 			break
-		filename = "data/%s/images/%s.jpg" % (process ,str(entry['sequence_id']).zfill(4))
+		filename = "data/%s/images/%s.jpg" % (process ,str(work['sequence_id']).zfill(4))
 		try:
 			I = Image.open(filename)
 			I = I.resize((100,100),resample=LANCZOS)

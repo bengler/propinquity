@@ -4,6 +4,7 @@ from collection import Collection
 import logging
 from logging.handlers import RotatingFileHandler
 import sys
+import build_webdata
 
 # set up rotating logfile (and log to console)
 logger = logging.getLogger('propinquity')
@@ -60,4 +61,6 @@ for options in collectionOpts:
   fetcher.fetch_new(options)
   embedder.embed_new(options)
   collection.write()
+  build_webdata.build_web_files(options)
+
 

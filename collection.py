@@ -21,6 +21,8 @@ class Collection:
 		'year_end',
 		'image_width',
 		'image_height',
+		'embedding_x',
+		'embedding_y',
 	]
 
 	def __init__(self, collection_id):
@@ -104,8 +106,10 @@ class Collection:
 
 		return found_works
 
-	def add_embedding(self, sequence_id):
+	def add_embedding(self, sequence_id, embedding):
 		self.works[int(sequence_id) - 1]['embedded'] = 1
+		self.works[int(sequence_id) - 1]['embedding_x'] = embedding[0]
+		self.works[int(sequence_id) - 1]['embedding_y'] = embedding[1]
 		self.modified = True
 		
 		return None
