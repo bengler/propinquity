@@ -248,33 +248,25 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 			mouseChange.copy( _panEnd ).sub( _panStart );
 
-			// mai panning fix
-			/*var screenSize = new THREE.Vector2();
-			screenSize.x = _this.screen.width*0.0007;
-			screenSize.y = _this.screen.height*0.0007;
-			mouseChange.multiply(screenSize);*/
-
 			if ( mouseChange.lengthSq() ) {
+				
+				var vector_1 = new THREE.Vector3((_panEnd.x*2)-1, (_panEnd.y*2)-1, 0.5);
+				vector_1.unproject( _this.object );
+				var dir_1 = vector_1.sub( _this.object.position ).normalize();
+				var distance_1 = - _this.object.position.z / dir_1.z;
+				var pe = dir_1.multiplyScalar( distance_1 );
+				
+				var vector_2 = new THREE.Vector3((_panStart.x*2)-1, (_panStart.y*2)-1, 0.5);
+				vector_2.unproject( _this.object );
+				var dir_2 = vector_2.sub( _this.object.position ).normalize();
+				var distance_2 = - _this.object.position.z / dir_2.z;
+				var ps = dir_2.multiplyScalar( distance_2 );
 
-				/*mouseChange.multiplyScalar(2).subScalar(1);
-				var vector = new THREE.Vector3(mouseChange.x, -mouseChange.y, 0.5);
-				vector.unproject( _this.object );
-				var dir = vector.sub( _this.object.position ).normalize();
-				var distance = - _this.object.position.z / dir.z;
-				var pos = _this.object.position.clone().add( dir.multiplyScalar( distance ) );*/
-				var pe = getPlanePos(_panEnd);
-				var ps = getPlanePos(_panStart);
+				var diff = pe.sub(ps);
 
-				//mouseChange.multiplyScalar( _eye.length() * _this.panSpeed );
-				//mouseChange.x = pe.x - ps.x;
-				//mouseChange.y = pe.y - ps.y;
+				pan.copy( _eye ).cross( _this.object.up ).setLength( diff.x );
+				pan.add( objectUp.copy( _this.object.up ).setLength( diff.y ) );
 
-				pan.copy( _eye ).cross( _this.object.up ).setLength( pe.x - ps.x );
-				pan.add( objectUp.copy( _this.object.up ).setLength( pe.y - ps.y ) );
-				/*pan.copy( _eye ).cross( _this.object.up ).setLength( mouseChange.x );
-				pan.add( objectUp.copy( _this.object.up ).setLength( mouseChange.y ) );*/
-
-				//debugger;
 				_this.object.position.add( pan );
 				_this.target.add( pan );
 
@@ -294,15 +286,6 @@ THREE.TrackballControls = function ( object, domElement ) {
 		};
 
 	}() );
-
-	function getPlanePos(vec2) {
-		var vector = new THREE.Vector3((vec2.x*2)-1, (vec2.y*2)-1, 0.5);
-		vector.unproject( _this.object );
-		var dir = vector.sub( _this.object.position ).normalize();
-		var distance = - _this.object.position.z / dir.z;
-		var pos = _this.object.position.clone().add( dir.multiplyScalar( distance ) );
-		return pos;
-	}
 
 	this.checkDistances = function () {
 
