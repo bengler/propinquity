@@ -4,9 +4,12 @@ from PIL import Image
 from PIL.Image import LANCZOS
 import re
 import math
+import logging
+
+logger = logging.getLogger('propinquity')
 
 def build_web_files(options):
-	print "- Embedding %s" % options['process_id']
+	logger.info("- Building web files for  '%s'" % options['process_id'])
 
 	# create json files with the necessary fields
 	process = options['process_id']
