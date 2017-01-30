@@ -172,9 +172,6 @@ def embed_new(options):
 
 	images_root = 'data/%s/images/' % options['process_id']
 
-	csv_file = open(os.path.join('data/', options['process_id'], 'embeddings.csv'),'a')
-	csv_writer = csv.writer(csv_file)
-
 	collection = options['collection']
 	works_to_embed = collection.get_works_to_embed()
 	logger.info("- embedding %d images" % (len(works_to_embed)))
@@ -183,6 +180,4 @@ def embed_new(options):
 
 		work_image = images_root + str(sequence_id).zfill(4) + ".jpg"
 		embedding = embedder.embed(work_image)
-		csv_writer.writerow([work_image] + embedding)
-
-		collection.add_embedding(sequence_id)
+		collection.add_embedding(sequence_id, embedding)

@@ -8,7 +8,7 @@
 THREE.TrackballControls = function ( object, domElement ) {
 
 	var _this = this;
-	var STATE = { NONE: - 1, ROTATE: 2, ZOOM: 1, PAN: 0, TOUCH_ROTATE: 3, TOUCH_ZOOM_PAN: 4 };
+	var STATE = { NONE: - 1, ROTATE: 2, ZOOM: 1, PAN: 0, TOUCH_PAN: 3, TOUCH_ZOOM: 4 };
 
 	this.object = object;
 	this.domElement = ( domElement !== undefined ) ? domElement : document;
@@ -21,21 +21,22 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 	this.rotateSpeed = 1.0;
 	this.zoomSpeed = 1.2;
-	//this.panSpeed = 0.18;
-	this.panSpeed = 0.5;
+	this.panSpeed = 0.3;
 
 	this.noRotate = false;
 	this.noZoom = false;
 	this.noPan = false;
+	this.noMouseZoom = false;
 
-	this.staticMoving = true;
-	//this.staticMoving = false;
+	this.staticMoving = false;
 	this.dynamicDampingFactor = 0.2;
 
 	this.minDistance = 0;
 	this.maxDistance = Infinity;
 
 	this.keys = [ 65 /*A*/, 83 /*S*/, 68 /*D*/ ];
+
+	this.ismousedown = false;
 
 	// internals
 
@@ -207,7 +208,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 		var factor;
 
-		if ( _state === STATE.TOUCH_ZOOM_PAN ) {
+		if ( _state === STATE.TOUCH_ZOOM ) {
 
 			factor = _touchZoomDistanceStart / _touchZoomDistanceEnd;
 			_touchZoomDistanceStart = _touchZoomDistanceEnd;
@@ -246,22 +247,29 @@ THREE.TrackballControls = function ( object, domElement ) {
 		return function panCamera() {
 
 			mouseChange.copy( _panEnd ).sub( _panStart );
-			
-			// mai panning fix
-			/*var screenSize = new THREE.Vector2();
-			screenSize.x = _this.screen.width*0.0007;
-			screenSize.y = _this.screen.height*0.0007;
-			mouseChange.multiply(screenSize);*/
 
 			if ( mouseChange.lengthSq() ) {
+				
+				var vector_1 = new THREE.Vector3((_panEnd.x*2)-1, (_panEnd.y*2)-1, 0.5);
+				vector_1.unproject( _this.object );
+				var dir_1 = vector_1.sub( _this.object.position ).normalize();
+				var distance_1 = - _this.object.position.z / dir_1.z;
+				var pe = dir_1.multiplyScalar( distance_1 );
+				
+				var vector_2 = new THREE.Vector3((_panStart.x*2)-1, (_panStart.y*2)-1, 0.5);
+				vector_2.unproject( _this.object );
+				var dir_2 = vector_2.sub( _this.object.position ).normalize();
+				var distance_2 = - _this.object.position.z / dir_2.z;
+				var ps = dir_2.multiplyScalar( distance_2 );
 
-				mouseChange.multiplyScalar( _eye.length() * _this.panSpeed );
+				var diff = pe.sub(ps);
 
-				pan.copy( _eye ).cross( _this.object.up ).setLength( mouseChange.x );
-				pan.add( objectUp.copy( _this.object.up ).setLength( mouseChange.y ) );
+				pan.copy( _eye ).cross( _this.object.up ).setLength( diff.x );
+				pan.add( objectUp.copy( _this.object.up ).setLength( diff.y ) );
 
 				_this.object.position.add( pan );
 				_this.target.add( pan );
+
 
 				if ( _this.staticMoving ) {
 
@@ -396,6 +404,8 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 	function mousedown( event ) {
 
+		this.ismousedown = true;
+
 		if ( _this.enabled === false ) return;
 
 		if ( _state === STATE.NONE ) {
@@ -409,7 +419,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 			_moveCurr.copy( getMouseOnCircle( event.pageX, event.pageY ) );
 			_movePrev.copy( _moveCurr );
 
-		} else if ( _state === STATE.ZOOM && ! _this.noZoom ) {
+		} else if ( _state === STATE.ZOOM && ! _this.noZoom && ! _this.noMouseZoom) {
 
 			_zoomStart.copy( getMouseOnScreen( event.pageX, event.pageY ) );
 			_zoomEnd.copy( _zoomStart );
@@ -421,8 +431,8 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 		}
 
-		document.addEventListener( 'mousemove', mousemove, false );
-		document.addEventListener( 'mouseup', mouseup, false );
+		document.addEventListener( 'mousemove', mousemove.bind(this), false );
+		document.addEventListener( 'mouseup', mouseup.bind(this), false );
 
 		_this.dispatchEvent( startEvent );
 
@@ -437,7 +447,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 			_movePrev.copy( _moveCurr );
 			_moveCurr.copy( getMouseOnCircle( event.pageX, event.pageY ) );
 
-		} else if ( _state === STATE.ZOOM && ! _this.noZoom ) {
+		} else if ( _state === STATE.ZOOM && ! _this.noZoom && ! _this.noMouseZoom ) {
 
 			_zoomEnd.copy( getMouseOnScreen( event.pageX, event.pageY ) );
 
@@ -450,6 +460,8 @@ THREE.TrackballControls = function ( object, domElement ) {
 	}
 
 	function mouseup( event ) {
+
+		this.ismousedown = false;
 
 		if ( _this.enabled === false ) return;
 
@@ -465,25 +477,29 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 		if ( _this.enabled === false ) return;
 
-		var delta = 0;
+		if ( ! _this.noMouseZoom ) {
 
-		if ( event.wheelDelta ) {
+			var delta = 0;
 
-			// WebKit / Opera / Explorer 9
+			if ( event.wheelDelta ) {
 
-			delta = event.wheelDelta / 40;
+				// WebKit / Opera / Explorer 9
 
-		} else if ( event.detail ) {
+				delta = event.wheelDelta / 40;
 
-			// Firefox
+			} else if ( event.detail ) {
 
-			delta = - event.detail / 3;
+				// Firefox
+
+				delta = - event.detail / 3;
+
+			}
+
+			_zoomStart.y += delta * 0.01;
+			_this.dispatchEvent( startEvent );
+			_this.dispatchEvent( endEvent );
 
 		}
-
-		_zoomStart.y += delta * 0.01;
-		_this.dispatchEvent( startEvent );
-		_this.dispatchEvent( endEvent );
 
 	}
 
@@ -494,21 +510,18 @@ THREE.TrackballControls = function ( object, domElement ) {
 		switch ( event.touches.length ) {
 
 			case 1:
-				_state = STATE.TOUCH_ROTATE;
-				_moveCurr.copy( getMouseOnCircle( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY ) );
-				_movePrev.copy( _moveCurr );
+				_state = STATE.TOUCH_PAN;
+				var x = ( event.touches[ 0 ].pageX );
+				var y = ( event.touches[ 0 ].pageY );
+				_panStart.copy( getMouseOnScreen( x, y ) );
+				_panEnd.copy( _panStart );
 				break;
 
 			default: // 2 or more
-				_state = STATE.TOUCH_ZOOM_PAN;
+				_state = STATE.TOUCH_ZOOM;
 				var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
 				var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
 				_touchZoomDistanceEnd = _touchZoomDistanceStart = Math.sqrt( dx * dx + dy * dy );
-
-				var x = ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX ) / 2;
-				var y = ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY ) / 2;
-				_panStart.copy( getMouseOnScreen( x, y ) );
-				_panEnd.copy( _panStart );
 				break;
 
 		}
@@ -521,21 +534,21 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 		if ( _this.enabled === false ) return;
 
+		event.preventDefault();
+		event.stopPropagation();
+
 		switch ( event.touches.length ) {
 
 			case 1:
-				_movePrev.copy( _moveCurr );
-				_moveCurr.copy( getMouseOnCircle( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY ) );
+				var x = ( event.touches[ 0 ].pageX );
+				var y = ( event.touches[ 0 ].pageY );
+				_panEnd.copy( getMouseOnScreen( x, y ) );
 				break;
 
 			default: // 2 or more
 				var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
 				var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
 				_touchZoomDistanceEnd = Math.sqrt( dx * dx + dy * dy );
-
-				var x = ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX ) / 2;
-				var y = ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY ) / 2;
-				_panEnd.copy( getMouseOnScreen( x, y ) );
 				break;
 
 		}
@@ -553,9 +566,11 @@ THREE.TrackballControls = function ( object, domElement ) {
 				break;
 
 			case 1:
-				_state = STATE.TOUCH_ROTATE;
-				_moveCurr.copy( getMouseOnCircle( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY ) );
-				_movePrev.copy( _moveCurr );
+				_state = STATE.TOUCH_PAN;
+				var x = ( event.touches[ 0 ].pageX );
+				var y = ( event.touches[ 0 ].pageY );
+				_panStart.copy( getMouseOnScreen( x, y ) );
+				_panEnd.copy( _panStart );
 				break;
 
 		}
@@ -590,7 +605,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 	};
 
 	this.domElement.addEventListener( 'contextmenu', contextmenu, false );
-	this.domElement.addEventListener( 'mousedown', mousedown, false );
+	this.domElement.addEventListener( 'mousedown', mousedown.bind(this), false );
 	this.domElement.addEventListener( 'mousewheel', mousewheel, false );
 	this.domElement.addEventListener( 'MozMousePixelScroll', mousewheel, false ); // firefox
 
