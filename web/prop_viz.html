@@ -168,6 +168,7 @@
 
 						mesh = new THREE.Mesh(singleGeometry, material);
 						scene.add(mesh);
+						animate();
 					}/*,
 					function(xhr) {
 						$('#info').html( (xhr.loaded / xhr.total * 100) + '% loaded' );
@@ -422,7 +423,6 @@
 			}
 
 			init();
-			animate();
 
 		</script>
 
