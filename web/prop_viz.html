@@ -52,6 +52,21 @@
 				cursor : pointer;
 			}
 
+			#uicontrols {
+				position : absolute;
+				right : 0px;
+				bottom : 0px;
+				opacity : 0.5;
+				margin : 30px;
+			}
+
+			#uicontrols img {
+				width : 40px;
+				height : 40px;
+				margin : 10px;
+				cursor : pointer;
+			}
+
 		</style>
 	</head>
 	<body>
@@ -59,6 +74,10 @@
 		<div id="container"></div>
 		<div id="info">propinquity demo</div>
 		<div id="imageinfo"></div>
+		<div id="uicontrols">
+			<img src="css/plus.svg" id="ui_zoom_in">
+			<img src="css/minus.svg" id="ui_zoom_out">
+		</div>
 
 		<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 		<script src="//cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.min.js"></script>
@@ -70,7 +89,6 @@
 
 		<script src="js/Detector.js"></script>
 		<script src="js/stats.min.js"></script>
-		<script src="tsne_map.js"></script>
 		<script src="painting.js"></script>
 
 		<script>
@@ -421,6 +439,16 @@
 				}
 
 			}
+
+			function onUIZoomIn(event) {
+				controls.zoomIn();
+			}
+
+			function onUIZoomOut(event) {
+				controls.zoomOut();
+			}
+			$('#ui_zoom_in').click(onUIZoomIn)
+			$('#ui_zoom_out').click(onUIZoomOut)
 
 			init();
 
