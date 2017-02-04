@@ -13,7 +13,7 @@
 				font-size:13px;
 				text-align:center;
 
-				background-color: #fff;
+				background-color: #aaa;
 				margin: 0px;
 				overflow: hidden;
 			}
@@ -200,7 +200,7 @@
 
 				//
 
-				renderer = new THREE.WebGLRenderer( { antialias: false } );
+				renderer = new THREE.WebGLRenderer( { antialias: false, alpha : true } );
 				renderer.setClearColor( 0xaaaaaa );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
