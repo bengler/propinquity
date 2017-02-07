@@ -102,7 +102,7 @@
 
 		<script src="js/Detector.js"></script>
 		<script src="js/stats.min.js"></script>
-		<script src="painting.js"></script>
+		<script src="collection.js"></script>
 
 		<script>
 			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -123,11 +123,13 @@
 
 			var fisheye = d3.fisheye.circular().radius(200).distortion(5);
 
-			var tileSize = 17; // initial size of works
-
-			var tilesPerDim = 40;
+			var tileSize = 14; // initial size of works
 
 			var mouse_down_init_position;
+
+			var numberWorks = 0;
+
+			var numTextures, textureLoader;
 
 			var unit_coords = [
 				new THREE.Vector2(0,1.),
@@ -149,65 +151,85 @@
 
 				scene = new THREE.Scene();
 
+				scene.add( new THREE.AmbientLight( 0xffffff ) );
+
 				//
 
-				scene.add( new THREE.AmbientLight( 0xffffff ) );
+				for (var i = 0;i < mosaics.length;i++) {
+					numberWorks += mosaics[i]["tiles"];
+				}
 
 				// create geometry and merge into one geometry
 				singleGeometry = new THREE.Geometry();
-				for (var i = 0;i < tilesPerDim*tilesPerDim;i++) {
+				for (var i = 0;i < numberWorks;i++) {
 					var area = collection[i]['image_width']*collection[i]['image_height'];
-					var scaling = tileSize/Math.sqrt(area);
+					var scaling = tileSize / Math.sqrt(area);
 					collection[i]['draw_width'] = Math.round(collection[i]['image_width']*scaling);
 					collection[i]['draw_height'] = Math.round(collection[i]['image_height']*scaling);
 
 					var plane = new THREE.PlaneGeometry( collection[i]['draw_width'], collection[i]['draw_height'] );
 					var planeMesh = new THREE.Mesh(plane);
-					planeMesh.position.x = 3*collection[i]['x'];
-					planeMesh.position.y = 3*collection[i]['y'];
+					planeMesh.position.x = 3*collection[i]['embedding_x'];
+					planeMesh.position.y = 3*collection[i]['embedding_y'];
 					planeMesh.updateMatrix();
 					singleGeometry.merge(planeMesh.geometry, planeMesh.matrix);
 				}
 
-				// then load texture
-				var texture = new THREE.TextureLoader().load(
-					"tiled_map_40x40_100.jpg",
-					function(texture) {
-						texture.flipY = false;
-						// clear any uv-mappings
-						singleGeometry.faceVertexUvs[0] = [];
-						// for each painting
-						for (var i = 0;i < tilesPerDim*tilesPerDim;i++) {
-							var left = (i % tilesPerDim)/tilesPerDim
-							var upper = Math.floor(i / tilesPerDim)/tilesPerDim
-							var right = left + 1/tilesPerDim
-							var lower = upper + 1/tilesPerDim
+				var loadGeometry = function() {
+					var materials = [];
+					var totalVertices = 0;
+					for (var i = 0;i < numTextures;i++) {
+						// set up mapping from textures to geometry
+						var mw = mosaics[i].mosaicWidth;
+						var mh = mosaics[i].mosaicHeight;
+						for (var j = 0;j < mosaics[i].tiles;j++) {
+							var left = (j % mw)/mw;
+							var upper = Math.floor(j / mw)/mh;
+							var right = left + 1/mw;
+							var lower = upper + 1/mh;
 							var coords = [
 								new THREE.Vector2(left,upper),
 								new THREE.Vector2(left,lower),
 								new THREE.Vector2(right,lower),
 								new THREE.Vector2(right,upper),
 							];
-							// map each painting to geometry and position
-							singleGeometry.faceVertexUvs[0][i*2] = [ coords[0], coords[1], coords[3] ];
-							singleGeometry.faceVertexUvs[0][(i*2) + 1] = [ coords[1], coords[2], coords[3] ];
+							singleGeometry.faceVertexUvs[0][totalVertices*2] = [ coords[0], coords[1], coords[3] ];
+							singleGeometry.faceVertexUvs[0][(totalVertices*2) + 1] = [ coords[1], coords[2], coords[3] ];
+							singleGeometry.faces[totalVertices * 2].materialIndex = i;
+							singleGeometry.faces[(totalVertices*2) + 1].materialIndex = i;
+							totalVertices += 1;
 						}
 
-						var mat_1 = new THREE.MeshBasicMaterial( { map : texture});
-						var mat_2 = new THREE.MeshBasicMaterial( {  });
-						var material = new THREE.MultiMaterial( [mat_1, mat_2] );
+						materials[i] = new THREE.MeshBasicMaterial({ map : textures[i] });
+					}
+					materials[numTextures] = new THREE.MeshBasicMaterial({});
+					var multimaterial = new THREE.MultiMaterial(materials);
 
-						mesh = new THREE.Mesh(singleGeometry, material);
-						scene.add(mesh);
+					mesh = new THREE.Mesh(singleGeometry, multimaterial);
+					scene.add(mesh);
 
-						$("#message").hide();
-						animate();
-					}/*,
-					function(xhr) {
-						$('#info').html( (xhr.loaded / xhr.total * 100) + '% loaded' );
-					}*/
-				);
+					$("#message").hide();
+					animate();
+				}
+				
+				var texturesLoaded = 0;
+				numTextures = mosaics.length;
+				var textures = [];
+				textureLoader = new THREE.TextureLoader()
+				singleGeometry.faceVertexUvs[0] = [];
+				for (var i = 0;i < numTextures;i++) {
+					var texture = textureLoader.load(
+						"images/"+mosaics[i].image,
+						function(texture) {
+							texture.flipY = false;
+							texturesLoaded += 1;
+							if (texturesLoaded == numTextures) loadGeometry();
+						}
+					)
+					textures[i] = texture;
+				}
 
+				//
 
 				raycaster = new THREE.Raycaster();
 
@@ -225,7 +247,6 @@
 				controls.minDistance = 100;
 				controls.maxDistance = 3000;
 				controls.noRotate = true;
-				//controls.noZoom = true;
 				controls.noMouseZoom = true;
 				controls.panSpeed = 0.5;
 				controls.staticMoving = true;
@@ -301,7 +322,7 @@
 				fisheye.focus([pos.x,pos.y]);
 
 				for (var i = 0;i < singleGeometry.vertices.length;i+=4) {
-					var cur_coords = [collection[i/4]['x'],collection[i/4]['y']];
+					var cur_coords = [collection[i/4]['embedding_x'],collection[i/4]['embedding_y']];
 					var fisheye_trans = fisheye({x: 3*cur_coords[0], y: 3*cur_coords[1]});
 
 					var x_size = collection[i/4]['draw_width']/2
@@ -385,20 +406,20 @@
 			function getHighResImage(index) {
 				var index_str = "" + collection[index]['sequence_id'];
 				var image_filename = "0000".substring(0, 4 - index_str.length) + index_str;
-				var loader = new THREE.TextureLoader().load(
+				textureLoader.load(
 					'https://mm.dimu.org/image/'+collection[index]['image_id']+'?dimension=400x400',
 					//'/data/painting/images/'+image_filename+".jpg",
 					function (texture) {
 						if (currentIntersectFace == index) {
 							// update texture
-							mesh.material.materials[1].map = texture;
-							mesh.material.materials[1].needsUpdate = true;
+							mesh.material.materials[numTextures].map = texture;
+							mesh.material.materials[numTextures].needsUpdate = true;
 							mesh.material.needsUpdate = true;
 							// map each painting to geometry and position
 							mesh.geometry.faceVertexUvs[0][index*2] = [ unit_coords[0], unit_coords[1], unit_coords[3] ];
 							mesh.geometry.faceVertexUvs[0][(index*2) + 1] = [ unit_coords[1], unit_coords[2], unit_coords[3] ];
-							mesh.geometry.faces[index * 2].materialIndex = 1;
-							mesh.geometry.faces[(index*2) + 1].materialIndex = 1;
+							mesh.geometry.faces[index * 2].materialIndex = numTextures;
+							mesh.geometry.faces[(index*2) + 1].materialIndex = numTextures;
 							mesh.geometry.uvsNeedUpdate = true;
 							mesh.geometry.elementsNeedUpdate = true;
 							mesh.geometry.groupsNeedUpdate = true;
@@ -409,11 +430,15 @@
 
 			function removeHighResImage(index) {
 				highResImageIndex = -1;
-				var i = index;
-				var left = (i % tilesPerDim)/tilesPerDim
-				var upper = Math.floor(i / tilesPerDim)/tilesPerDim
-				var right = left + 1/tilesPerDim
-				var lower = upper + 1/tilesPerDim
+				var mosaicIndex = Math.floor(index / mosaics[0].tiles);
+				var i = index % mosaics[0].tiles;
+				var mw = mosaics[mosaicIndex].mosaicWidth;
+				var mh = mosaics[mosaicIndex].mosaicHeight;
+
+				var left = (i % mw)/mw;
+				var upper = Math.floor(i / mw)/mh;
+				var right = left + 1/mw;
+				var lower = upper + 1/mh;
 				var coords = [
 					new THREE.Vector2(left,upper),
 					new THREE.Vector2(left,lower),
@@ -422,8 +447,8 @@
 				];
 				mesh.geometry.faceVertexUvs[0][index*2] = [ coords[0], coords[1], coords[3] ];
 				mesh.geometry.faceVertexUvs[0][(index*2) + 1] = [ coords[1], coords[2], coords[3] ];
-				mesh.geometry.faces[index * 2].materialIndex = 0;
-				mesh.geometry.faces[(index*2) + 1].materialIndex = 0;
+				mesh.geometry.faces[index * 2].materialIndex = mosaicIndex;
+				mesh.geometry.faces[(index*2) + 1].materialIndex = mosaicIndex;
 				mesh.geometry.uvsNeedUpdate = true;
 				mesh.geometry.elementsNeedUpdate = true;
 				mesh.geometry.groupsNeedUpdate = true;
