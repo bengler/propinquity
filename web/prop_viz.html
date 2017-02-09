@@ -103,9 +103,10 @@
 		<script src="js/Detector.js"></script>
 		<script src="js/stats.min.js"></script>
 		<script src="collection.js"></script>
+		<script src="js/canvasrenderer.js"></script>
+		<script src="js/Projector.js"></script>
 
 		<script>
-			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 			var container, stats;
 
@@ -188,10 +189,10 @@
 							var right = left + 1/mw;
 							var lower = upper + 1/mh;
 							var coords = [
-								new THREE.Vector2(left,upper),
-								new THREE.Vector2(left,lower),
-								new THREE.Vector2(right,lower),
-								new THREE.Vector2(right,upper),
+								new THREE.Vector2(left,1-upper),
+								new THREE.Vector2(left,1-lower),
+								new THREE.Vector2(right,1-lower),
+								new THREE.Vector2(right,1-upper),
 							];
 							singleGeometry.faceVertexUvs[0][totalVertices*2] = [ coords[0], coords[1], coords[3] ];
 							singleGeometry.faceVertexUvs[0][(totalVertices*2) + 1] = [ coords[1], coords[2], coords[3] ];
@@ -200,9 +201,9 @@
 							totalVertices += 1;
 						}
 
-						materials[i] = new THREE.MeshBasicMaterial({ map : textures[i] });
+						materials[i] = new THREE.MeshBasicMaterial({ map : textures[i], overdraw : true });
 					}
-					materials[numTextures] = new THREE.MeshBasicMaterial({});
+					materials[numTextures] = new THREE.MeshBasicMaterial({ overdraw : true });
 					var multimaterial = new THREE.MultiMaterial(materials);
 
 					mesh = new THREE.Mesh(singleGeometry, multimaterial);
@@ -221,7 +222,7 @@
 					var texture = textureLoader.load(
 						"images/"+mosaics[i].image,
 						function(texture) {
-							texture.flipY = false;
+							texture.flipY = true;
 							texturesLoaded += 1;
 							if (texturesLoaded == numTextures) loadGeometry();
 						}
@@ -237,7 +238,11 @@
 
 				//
 
-				renderer = new THREE.WebGLRenderer( { antialias: false, alpha : true } );
+				if ( Detector.webgl ) {
+					renderer = new THREE.WebGLRenderer( { antialias: false, alpha : true } );
+				} else {
+					renderer = new THREE.CanvasRenderer( { antialias: false, alpha : true } );
+				}
 				renderer.setClearColor( 0xaaaaaa );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
@@ -440,10 +445,10 @@
 				var right = left + 1/mw;
 				var lower = upper + 1/mh;
 				var coords = [
-					new THREE.Vector2(left,upper),
-					new THREE.Vector2(left,lower),
-					new THREE.Vector2(right,lower),
-					new THREE.Vector2(right,upper),
+					new THREE.Vector2(left,1-upper),
+					new THREE.Vector2(left,1-lower),
+					new THREE.Vector2(right,1-lower),
+					new THREE.Vector2(right,1-upper),
 				];
 				mesh.geometry.faceVertexUvs[0][index*2] = [ coords[0], coords[1], coords[3] ];
 				mesh.geometry.faceVertexUvs[0][(index*2) + 1] = [ coords[1], coords[2], coords[3] ];
