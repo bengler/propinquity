@@ -55,7 +55,7 @@
 			#uicontrols {
 				position : absolute;
 				right : 0px;
-				bottom : 0px;
+				top : 0px;
 				opacity : 0.5;
 				margin : 30px;
 			}
@@ -77,6 +77,21 @@
 				width : 300px;
 				height : 100px;
 				font-size : 24px;
+			}
+
+			@media (max-width: 740px) {
+				#imageinfo {
+					font-size: 15px;
+				}
+
+				#imageinfo p {
+					margin-left : 20px;
+					margin-right : 20px;
+				}
+
+				#uicontrols {
+					margin : 20px;
+				}
 			}
 
 		</style>
@@ -153,8 +168,6 @@
 				camera.position.z = 2000;
 
 				scene = new THREE.Scene();
-
-				scene.add( new THREE.AmbientLight( 0xffffff ) );
 
 				//
 
