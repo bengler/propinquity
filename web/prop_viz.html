@@ -270,6 +270,7 @@
 				window.addEventListener( 'resize', onWindowResize, false );
 				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 				document.addEventListener( 'mousewheel', onMouseWheel, false);
+				document.addEventListener( 'DOMMouseScroll', onMouseWheel, false); // for firefox
 				renderer.domElement.addEventListener( 'mousedown', onWebGLMouseDown, false);
 				renderer.domElement.addEventListener( 'mouseup', onWebGLMouseUp, false);
 
@@ -481,7 +482,7 @@
 				vector.unproject(camera); // gives us the true coordinates of the point
 				vector.sub(camera.position);
 				var move = vector.setLength(camera.position.length()*factor);
-				if (event.deltaY < 0) {
+				if (event.deltaY < 0 || event.detail < 0) {
 					if ((move.z + camera.position.z) >= controls.minDistance) {
 						camera.position.addVectors(camera.position, move);
 						move.z = 0;
