@@ -139,6 +139,8 @@
 				new THREE.Vector2(1.,1.),
 			];
 
+			var hiResTexture;
+
 			THREE.ImageUtils.crossOrigin = '';
 
 			function init() {
@@ -411,7 +413,7 @@
 			function getHighResImage(index) {
 				var index_str = "" + collection[index]['sequence_id'];
 				var image_filename = "0000".substring(0, 4 - index_str.length) + index_str;
-				textureLoader.load(
+				hiResTexture = textureLoader.load(
 					'https://mm.dimu.org/image/'+collection[index]['image_id']+'?dimension=400x400',
 					//'/data/painting/images/'+image_filename+".jpg",
 					function (texture) {
@@ -420,13 +422,20 @@
 							mesh.material.materials[numTextures].map = texture;
 							mesh.material.materials[numTextures].needsUpdate = true;
 							mesh.material.needsUpdate = true;
+
 							// map each painting to geometry and position
-							mesh.geometry.faceVertexUvs[0][index*2] = [ unit_coords[0], unit_coords[1], unit_coords[3] ];
-							mesh.geometry.faceVertexUvs[0][(index*2) + 1] = [ unit_coords[1], unit_coords[2], unit_coords[3] ];
+							mesh.geometry.faceVertexUvs[0][index*2][0].x = 0;
+							mesh.geometry.faceVertexUvs[0][index*2][0].y = 1.;
+							mesh.geometry.faceVertexUvs[0][index*2][1].x = 0;
+							mesh.geometry.faceVertexUvs[0][index*2][1].y = 0;
+							mesh.geometry.faceVertexUvs[0][(index*2)+1][1].x = 1.;
+							mesh.geometry.faceVertexUvs[0][(index*2)+1][1].y = 0;
+							mesh.geometry.faceVertexUvs[0][(index*2)+1][2].x = 1.;
+							mesh.geometry.faceVertexUvs[0][(index*2)+1][2].y = 1.;
+							mesh.geometry.uvsNeedUpdate = true;
+							
 							mesh.geometry.faces[index * 2].materialIndex = numTextures;
 							mesh.geometry.faces[(index*2) + 1].materialIndex = numTextures;
-							mesh.geometry.uvsNeedUpdate = true;
-							mesh.geometry.elementsNeedUpdate = true;
 							mesh.geometry.groupsNeedUpdate = true;
 						}
 					}
@@ -444,19 +453,22 @@
 				var upper = Math.floor(i / mw)/mh;
 				var right = left + 1/mw;
 				var lower = upper + 1/mh;
-				var coords = [
-					new THREE.Vector2(left,1-upper),
-					new THREE.Vector2(left,1-lower),
-					new THREE.Vector2(right,1-lower),
-					new THREE.Vector2(right,1-upper),
-				];
-				mesh.geometry.faceVertexUvs[0][index*2] = [ coords[0], coords[1], coords[3] ];
-				mesh.geometry.faceVertexUvs[0][(index*2) + 1] = [ coords[1], coords[2], coords[3] ];
+
 				mesh.geometry.faces[index * 2].materialIndex = mosaicIndex;
 				mesh.geometry.faces[(index*2) + 1].materialIndex = mosaicIndex;
-				mesh.geometry.uvsNeedUpdate = true;
-				mesh.geometry.elementsNeedUpdate = true;
 				mesh.geometry.groupsNeedUpdate = true;
+				
+				mesh.geometry.faceVertexUvs[0][index*2][0].x = left;
+				mesh.geometry.faceVertexUvs[0][index*2][0].y = 1-upper;
+				mesh.geometry.faceVertexUvs[0][index*2][1].x = left;
+				mesh.geometry.faceVertexUvs[0][index*2][1].y = 1-lower;
+				mesh.geometry.faceVertexUvs[0][(index*2)+1][1].x = right;
+				mesh.geometry.faceVertexUvs[0][(index*2)+1][1].y = 1-lower;
+				mesh.geometry.faceVertexUvs[0][(index*2)+1][2].x = right;
+				mesh.geometry.faceVertexUvs[0][(index*2)+1][2].y = 1-upper;
+				mesh.geometry.uvsNeedUpdate = true;
+
+				hiResTexture.dispose();
 			}
 
 			function onMouseWheel(event) {
