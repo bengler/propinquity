@@ -8,6 +8,8 @@ import logging
 
 logger = logging.getLogger('propinquity')
 
+TILESIZE = 100
+
 def build_web_files(options):
 	logger.info("- Building web files for  '%s'" % options['process_id'])
 
@@ -16,8 +18,8 @@ def build_web_files(options):
 	initial_filename = "data/%s/%s.csv" % (process, process)
 	orig_json = pd.read_csv(initial_filename, encoding='utf-8') \
 					.transpose().to_dict().values()
-
-	# load embedding coordinates
+	
+	# center embedding coordinates
 	num_embeddings = 0
 	x_mean = 0.0
 	y_mean = 0.0
@@ -61,34 +63,54 @@ def build_web_files(options):
 			output_json.append(work)
 
 	json_string = json.dumps(output_json, indent=2)
-	of = open("data/%s/%s.js" % (process, process),"w")
-	of.write("var collection = "+json_string)
+	of = open("data/%s/collection.js" % process, "w")
+	of.write("var collection = "+json_string+";\n\n")
+
+	logger.info("drawing out mosaics")
+
+	numWorks = len(output_json)
+	mosaics = []
+	maxTileDim = 4096/TILESIZE
+	maxTiles = maxTileDim*maxTileDim
+	num_mosaics = (numWorks / maxTiles)+1
+
+	for mosaic_index in range(num_mosaics):
+		# create tiled images for webgl
+		startIndex = maxTiles * mosaic_index
+		endIndex = min(maxTiles * (mosaic_index+1), numWorks)
+
+		if len(output_json) < (maxTiles * (mosaic_index+1)):
+			num_tiles = numWorks % maxTiles
+			mosaic_height = (num_tiles / maxTileDim) + 1
+			mosaic_width = maxTileDim if num_tiles > maxTileDim else num_tiles
+		else:
+			num_tiles = maxTiles
+			mosaic_height, mosaic_width = maxTileDim, maxTileDim
+
+		mosaic = Image.new("RGB",(mosaic_width*TILESIZE,mosaic_height*TILESIZE))
+		for i in range(startIndex, endIndex):
+			filename = "data/%s/images/%s.jpg" % (process ,str(output_json[i]['sequence_id']).zfill(4))
+			try:
+				I = Image.open(filename)
+				I = I.resize((TILESIZE,TILESIZE),resample=LANCZOS)
+			except:
+				logger.warning("image %s could not be loaded" % filename)
+				continue
+
+			left = ((i - startIndex) % maxTileDim)*TILESIZE
+			top = ((i - startIndex) / maxTileDim)*TILESIZE
+			mosaic.paste(I,(left, top, left + TILESIZE, top + TILESIZE))
+		mosaic_filename = "data/%s/%s_mosaic_%d.jpg" % (process, process, mosaic_index)
+		mosaic.save(mosaic_filename)
+
+		mosaics.append({
+			"image" : mosaic_filename.split("/")[-1],
+			"mosaicWidth" : mosaic_width,
+			"mosaicHeight" : mosaic_height,
+			"tileSize" : TILESIZE,
+			"tiles" : num_tiles,
+		})
+	mosaics_json = json.dumps(mosaics, indent=2)
+	of.write("var mosaics = "+mosaics_json+";\n")
+	
 	of.close()
-
-	# create tiled image for webgl (test with 100 by 100 images)
-	print "drawing out"
-	S = 4000 # size of canvas
-	tiles = Image.new("RGB",(S,S))
-	s = 100 # size of every tile
-	added_images = 0
-	for i,work in enumerate(output_json):
-		if added_images == 1600:
-			break
-		filename = "data/%s/images/%s.jpg" % (process ,str(work['sequence_id']).zfill(4))
-		try:
-			I = Image.open(filename)
-			I = I.resize((100,100),resample=LANCZOS)
-		except:
-			print "image %s could not be loaded" % filename
-			continue
-
-		left = (i % 40)*100
-		upper = (i / 40)*100
-		right = left + 100
-		lower = upper + 100
-		tiles.paste(I,(left, upper, right, lower))
-		added_images += 1
-	tiles.save("data/%s/tiled_map_40x40_100.jpg" % process)
-
-if __name__ == "__main__":
-	build_web_files({'process_id' : 'painting'})
