@@ -114,7 +114,6 @@
 		<script src="//cdnjs.cloudflare.com/ajax/libs/d3/4.4.3/d3.min.js"></script>
 		<script src="js/fisheye.js"></script>
 
-
 		<script src="js/Detector.js"></script>
 		<script src="js/stats.min.js"></script>
 		<script src="collection.js"></script>
@@ -155,6 +154,9 @@
 			];
 
 			var hiResTexture;
+
+			var isTouch = true;
+			var touchMove = false;
 
 			THREE.ImageUtils.crossOrigin = '';
 
@@ -225,6 +227,21 @@
 					scene.add(mesh);
 
 					$("#message").hide();
+					document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+					document.addEventListener( 'mousewheel', onMouseWheel, false);
+					document.addEventListener( 'DOMMouseScroll', onMouseWheel, false); // for firefox
+					document.addEventListener( 'touchstart', onTouchStart, false);
+					document.addEventListener( 'touchmove', onTouchMove, false);
+					document.addEventListener( 'touchcancel', onTouchEnd, false);
+					document.addEventListener( 'touchend', onTouchEnd, false);
+					renderer.domElement.addEventListener( 'mousedown', onWebGLMouseDown, false);
+					renderer.domElement.addEventListener( 'mouseup', onWebGLMouseUp, false);
+					$('#imageinfo')[0].addEventListener( 'touchend', onLinkTouchEnd, false);
+					$('#ui_zoom_in').click(onUIZoomIn)
+					$('#ui_zoom_out').click(onUIZoomOut)
+					$('#ui_zoom_in').bind('touchend', onUIZoomIn);
+					$('#ui_zoom_out').bind('touchend', onUIZoomOut);
+
 					animate();
 				}
 				
@@ -281,12 +298,6 @@
 				//
 
 				window.addEventListener( 'resize', onWindowResize, false );
-				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-				document.addEventListener( 'mousewheel', onMouseWheel, false);
-				document.addEventListener( 'DOMMouseScroll', onMouseWheel, false); // for firefox
-				renderer.domElement.addEventListener( 'mousedown', onWebGLMouseDown, false);
-				renderer.domElement.addEventListener( 'mouseup', onWebGLMouseUp, false);
-
 			}
 
 			function onWebGLMouseDown( event ) {
@@ -317,8 +328,9 @@
 			}
 
 			function onDocumentMouseMove( event ) {
-
 				event.preventDefault();
+
+				isTouch = false;
 
 				if (controls.ismousedown) return;
 
@@ -362,6 +374,45 @@
 
 			}
 
+			function onTouchStart( event ) {
+				isTouch = true;
+			}
+
+			function onTouchMove( event ) {
+				touchMove = true;
+			}
+
+			function onTouchEnd( event ) {
+				event.preventDefault();
+
+				mouse.x = ( event.changedTouches[ 0 ].pageX / window.innerWidth ) * 2 - 1;
+				mouse.y = - ( event.changedTouches[ 0 ].pageY / window.innerHeight ) * 2 + 1;
+
+				var previousFace = currentIntersectFace;
+				if (!touchMove) {
+					updateTileInfo();
+					if (currentIntersectFace >= 0) {
+						var work_url = "http://samling.nasjonalmuseet.no/no/object/"+collection[currentIntersectFace].identifier
+						if (currentIntersectFace == previousFace) {
+							window.open(work_url, '_blank');
+						}
+						var metadata = collection[currentIntersectFace];
+						$("#imageinfo").html("<p><strong>"+metadata.artist+", <a href='"+work_url+
+							"' target='_blank'><em>"+metadata.title+"</em></a></strong>. "+metadata.yearstring+".</p>")
+					}
+				}
+				touchMove = false;
+			}
+
+			function onLinkTouchEnd( event ) {
+				event.preventDefault();
+				event.stopPropagation();
+				if (currentIntersectFace >= 0) {
+					var work_url = "http://samling.nasjonalmuseet.no/no/object/"+collection[currentIntersectFace].identifier
+					window.open(work_url, '_blank');
+				}
+			}
+
 
 			function animate() {
 
@@ -373,15 +424,14 @@
 
 			}
 
-
-			function render() {
-
+			function updateTileInfo() {
+				
+				// check if pointer interacts with tile
 
 				raycaster.setFromCamera( mouse, camera );
-
-				// updates on entering/leaving tiles
-
 				var intersects = raycaster.intersectObject( mesh );
+				
+				// updates on entering/leaving tiles
 
 				if ( intersects.length > 0 ) {
 					var face_index = Math.floor(intersects[0].face.a/4);
@@ -417,8 +467,13 @@
 					$("#container").removeClass("clickable");
 					singleGeometry.verticesNeedUpdate = true;
 				}
+			}
 
-				//
+			function render() {
+
+				if (!isTouch) {
+					updateTileInfo();
+				}
 
 				renderer.render( scene, camera );
 
@@ -512,14 +567,16 @@
 			}
 
 			function onUIZoomIn(event) {
+				event.preventDefault();
+				event.stopPropagation();
 				controls.zoomIn();
 			}
 
 			function onUIZoomOut(event) {
+				event.preventDefault();
+				event.stopPropagation();
 				controls.zoomOut();
 			}
-			$('#ui_zoom_in').click(onUIZoomIn)
-			$('#ui_zoom_out').click(onUIZoomOut)
 
 			init();
 
