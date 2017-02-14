@@ -227,6 +227,21 @@
 					scene.add(mesh);
 
 					$("#message").hide();
+					document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+					document.addEventListener( 'mousewheel', onMouseWheel, false);
+					document.addEventListener( 'DOMMouseScroll', onMouseWheel, false); // for firefox
+					document.addEventListener( 'touchstart', onTouchStart, false);
+					document.addEventListener( 'touchmove', onTouchMove, false);
+					document.addEventListener( 'touchcancel', onTouchEnd, false);
+					document.addEventListener( 'touchend', onTouchEnd, false);
+					renderer.domElement.addEventListener( 'mousedown', onWebGLMouseDown, false);
+					renderer.domElement.addEventListener( 'mouseup', onWebGLMouseUp, false);
+					$('#imageinfo')[0].addEventListener( 'touchend', onLinkTouchEnd, false);
+					$('#ui_zoom_in').click(onUIZoomIn)
+					$('#ui_zoom_out').click(onUIZoomOut)
+					$('#ui_zoom_in').bind('touchend', onUIZoomIn);
+					$('#ui_zoom_out').bind('touchend', onUIZoomOut);
+
 					animate();
 				}
 				
@@ -283,17 +298,6 @@
 				//
 
 				window.addEventListener( 'resize', onWindowResize, false );
-				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-				document.addEventListener( 'mousewheel', onMouseWheel, false);
-				document.addEventListener( 'DOMMouseScroll', onMouseWheel, false); // for firefox
-				document.addEventListener( 'touchstart', onTouchStart, false);
-				document.addEventListener( 'touchmove', onTouchMove, false);
-				document.addEventListener( 'touchcancel', onTouchEnd, false);
-				document.addEventListener( 'touchend', onTouchEnd, false);
-				renderer.domElement.addEventListener( 'mousedown', onWebGLMouseDown, false);
-				renderer.domElement.addEventListener( 'mouseup', onWebGLMouseUp, false);
-				$('#imageinfo')[0].addEventListener( 'touchend', onLinkTouchEnd, false);
-
 			}
 
 			function onWebGLMouseDown( event ) {
@@ -573,10 +577,6 @@
 				event.stopPropagation();
 				controls.zoomOut();
 			}
-			$('#ui_zoom_in').click(onUIZoomIn)
-			$('#ui_zoom_out').click(onUIZoomOut)
-			$('#ui_zoom_in').bind('touchend', onUIZoomIn);
- +			$('#ui_zoom_out').bind('touchend', onUIZoomOut);
 
 			init();
 
