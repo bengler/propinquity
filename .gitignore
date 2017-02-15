@@ -3,3 +3,4 @@ data
 *.DS_Store
 *.log
 images
+node_modules

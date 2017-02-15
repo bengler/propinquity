@@ -1,0 +1,20 @@
+{
+  "name": "propinquity-client",
+  "version": "1.0.0",
+  "description": "",
+  "main": "",
+  "scripts": {
+    "start": "webpack-dev-server --progress --colors",
+    "build": "webpack"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "css-loader": "^0.26.1",
+    "style-loader": "^0.13.1"
+  },
+  "devDependencies": {
+    "uglify-js": "^2.7.5",
+    "uglifyjs-webpack-plugin": "^0.1.5"
+  }
+}
