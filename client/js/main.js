@@ -1,3 +1,8 @@
+
+var THREE = require("three-canvas-renderer");               // Canvas enabled THREE
+
+var TrackballControls = require('three-trackballcontrols');
+
 var container, stats;
 
 var camera, scene, renderer;
@@ -156,7 +161,7 @@ function init() {
   renderer.setSize( window.innerWidth, window.innerHeight );
   container.appendChild( renderer.domElement );
 
-  controls = new THREE.TrackballControls( camera, renderer.domElement );
+  controls = new TrackballControls( camera, renderer.domElement );
   controls.minDistance = 100;
   controls.maxDistance = 3000;
   controls.noRotate = true;
