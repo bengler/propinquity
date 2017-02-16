@@ -8,7 +8,9 @@ module.exports = {
         publicPath: '/js',
         filename: 'bundle.js'
     },
-    devtool: 'source-map',
+
+    devtool: '#source-maps',
+
     devServer:{
       contentBase: __dirname + '/dist'
     },

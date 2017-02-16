@@ -38,8 +38,6 @@ THREE.ImageUtils.crossOrigin = '';
 
 function init() {
 
-  console.info('running init')
-
   container = document.getElementById( 'container' );
 
   //
@@ -130,7 +128,7 @@ function init() {
   singleGeometry.faceVertexUvs[0] = [];
   for (var i = 0;i < numTextures;i++) {
     var texture = textureLoader.load(
-      "images/"+mosaics[i].image,
+      "data/"+mosaics[i].image,
       function(texture) {
         texture.flipY = true;
         texturesLoaded += 1;
