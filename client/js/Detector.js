@@ -4,7 +4,7 @@
  * @author mr.doob / http://mrdoob.com/
  */
 
-var Detector = {
+module.exports = Detector = {
 
 	canvas: !! window.CanvasRenderingContext2D,
 	webgl: ( function () {
@@ -71,9 +71,4 @@ var Detector = {
 
 };
 
-// browserify support
-if ( typeof module === 'object' ) {
-
-	module.exports = Detector;
-
-}
+module.exports = Detector;

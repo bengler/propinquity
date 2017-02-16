@@ -1,10 +1,12 @@
 // Canvas enabled THREE
 var THREE = require("three-canvas-renderer");
-var TrackballControls = require('./three-trackballcontrols');
-var d3Fisheye = require('./fisheye')
-var container, stats;
 
-console.info(d3Fisheye)
+var TrackballControls = require('./three-trackballcontrols');
+
+var Fisheye = require('./Fisheye')
+var detector = require('./Detector')
+
+var container, stats;
 
 var camera, scene, renderer;
 
@@ -18,7 +20,7 @@ var pos;
 
 var currentIntersectFace = -1;
 
-var fisheye = d3Fisheye.circular().radius(200).distortion(5);
+var fisheye = Fisheye.circular().radius(200).distortion(5);
 
 var tileSize = 14; // initial size of works
 
