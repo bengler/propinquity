@@ -157,7 +157,7 @@ function init() {
   } else {
     renderer = new THREE.CanvasRenderer( { antialias: false, alpha : true } );
   }
-  renderer.setClearColor( 0xaaaaaa );
+  renderer.setClearColor( 0x666666 );
   renderer.setPixelRatio( window.devicePixelRatio );
   renderer.setSize( window.innerWidth, window.innerHeight );
   container.appendChild( renderer.domElement );

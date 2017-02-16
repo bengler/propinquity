@@ -1,11 +1,9 @@
 body {
-  color: #cccccc;
-  /* font-family:Monospace;*/
   font-family: Open Sans, "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size:13px;
   text-align:center;
 
-  background-color: #aaa;
+  background-color: #333;
   margin: 0px;
   overflow: hidden;
 }
