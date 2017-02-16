@@ -41,8 +41,8 @@ a {
 }
 
 #uicontrols img {
-  opacity : 0.7;
-  background-color: rgba(247,247,239,.3);
+  opacity : 0.8;
+  background-color: rgba(247,247,239,.4);
   padding: 12px 10px 10px 10px;
   width : 25px;
   height : 25px;
