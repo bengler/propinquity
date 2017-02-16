@@ -22,7 +22,7 @@ var currentIntersectFace = -1;
 
 var fisheye = Fisheye.circular().radius(200).distortion(5);
 
-var tileSize = 14; // initial size of works
+var tileSize = 20; // initial size of works
 
 var mouse_down_init_position;
 
@@ -153,13 +153,12 @@ function init() {
   mouse = new THREE.Vector2();
 
   //
-
   if ( Detector.webgl ) {
-    renderer = new THREE.WebGLRenderer( { antialias: false, alpha : true } );
+    renderer = new THREE.WebGLRenderer( { antialias: false, alpha : true, logarithmicDepthBuffer: true  } );
   } else {
     renderer = new THREE.CanvasRenderer( { antialias: false, alpha : true } );
   }
-  renderer.setClearColor( 0x888888 );
+  renderer.setClearColor( 0x000000 );
   renderer.setPixelRatio( window.devicePixelRatio );
   renderer.setSize( window.innerWidth, window.innerHeight );
   container.appendChild( renderer.domElement );
@@ -245,14 +244,20 @@ function onDocumentMouseMove( event ) {
     var x_size = collection[i/4]['draw_width']/2
     var y_size = collection[i/4]['draw_height']/2
 
+    let z_scaler = 20;
+
     singleGeometry.vertices[i].x = fisheye_trans.x-x_size-((fisheye_trans.z-1)*0.7*x_size);
     singleGeometry.vertices[i].y = fisheye_trans.y+y_size+((fisheye_trans.z-1)*0.7*y_size);
+    singleGeometry.vertices[i].z = fisheye_trans.z*z_scaler;
     singleGeometry.vertices[i+1].x = fisheye_trans.x+x_size+((fisheye_trans.z-1)*0.7*x_size);
     singleGeometry.vertices[i+1].y = fisheye_trans.y+y_size+((fisheye_trans.z-1)*0.7*y_size);
+    singleGeometry.vertices[i+1].z = fisheye_trans.z*z_scaler;
     singleGeometry.vertices[i+2].x = fisheye_trans.x-x_size-((fisheye_trans.z-1)*0.7*x_size);
     singleGeometry.vertices[i+2].y = fisheye_trans.y-y_size-((fisheye_trans.z-1)*0.7*y_size);
+    singleGeometry.vertices[i+2].z = fisheye_trans.z*z_scaler;
     singleGeometry.vertices[i+3].x = fisheye_trans.x+x_size+((fisheye_trans.z-1)*0.7*x_size);
     singleGeometry.vertices[i+3].y = fisheye_trans.y-y_size-((fisheye_trans.z-1)*0.7*y_size);
+    singleGeometry.vertices[i+3].z = fisheye_trans.z*z_scaler;
   }
   singleGeometry.verticesNeedUpdate = true;
 
@@ -321,7 +326,7 @@ function updateTileInfo() {
     var face_index = Math.floor(intersects[0].face.a/4);
     if (currentIntersectFace == -1) {
       // entering tile
-      for (var i = 0;i < 4;i++) singleGeometry.vertices[(face_index*4)+i].z = 1.0;
+      // for (var i = 0;i < 4;i++) singleGeometry.vertices[(face_index*4)+i].z = 1.0;
       var metadata = collection[face_index];
       $("#imageinfo").html("<p><strong>"+metadata.artist+", <em>"+metadata.title+"</em></strong>. "+metadata.yearstring+".</p>")
       $("#imageinfo").show();
@@ -332,8 +337,8 @@ function updateTileInfo() {
       singleGeometry.verticesNeedUpdate = true;
     } else if (face_index != currentIntersectFace) {
       // entering tile, leaving previous tile
-      for (var i = 0;i < 4;i++) singleGeometry.vertices[(currentIntersectFace*4)+i].z = 0.0;
-      for (var i = 0;i < 4;i++) singleGeometry.vertices[(face_index*4)+i].z = 1.0;
+      // for (var i = 0;i < 4;i++) singleGeometry.vertices[(currentIntersectFace*4)+i].z = 0.0;
+      // for (var i = 0;i < 4;i++) singleGeometry.vertices[(face_index*4)+i].z = 1.0;
       var metadata = collection[face_index];
       $("#imageinfo").html("<p><strong>"+metadata.artist+", <em>"+metadata.title+"</em></strong>. "+metadata.yearstring+".</p>")
       removeHighResImage(currentIntersectFace);
