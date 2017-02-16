@@ -418,7 +418,10 @@ function removeHighResImage(index) {
   mesh.geometry.faceVertexUvs[0][(index*2)+1][2].y = 1-upper;
   mesh.geometry.uvsNeedUpdate = true;
 
-  hiResTexture.dispose();
+
+  if (hiResTexture) {
+    hiResTexture.dispose();
+  }
 }
 
 function onMouseWheel(event) {
