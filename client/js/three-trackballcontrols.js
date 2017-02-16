@@ -9,11 +9,19 @@
 
 var THREE = require('three');
 
+
+/**
+ * @author Eberhard Graether / http://egraether.com/
+ * @author Mark Lundin 	/ http://mark-lundin.com
+ * @author Simone Manini / http://daron1337.github.io
+ * @author Luca Antiga 	/ http://lantiga.github.io
+ */
+
 var TrackballControls;
 module.exports = TrackballControls = function ( object, domElement ) {
 
 	var _this = this;
-	var STATE = { NONE: - 1, ROTATE: 0, ZOOM: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_ZOOM_PAN: 4 };
+	var STATE = { NONE: - 1, ROTATE: 2, ZOOM: 1, PAN: 0, TOUCH_PAN: 3, TOUCH_ZOOM: 4 };
 
 	this.object = object;
 	this.domElement = ( domElement !== undefined ) ? domElement : document;
@@ -31,6 +39,7 @@ module.exports = TrackballControls = function ( object, domElement ) {
 	this.noRotate = false;
 	this.noZoom = false;
 	this.noPan = false;
+	this.noMouseZoom = false;
 
 	this.staticMoving = false;
 	this.dynamicDampingFactor = 0.2;
@@ -39,6 +48,8 @@ module.exports = TrackballControls = function ( object, domElement ) {
 	this.maxDistance = Infinity;
 
 	this.keys = [ 65 /*A*/, 83 /*S*/, 68 /*D*/ ];
+
+	this.ismousedown = false;
 
 	// internals
 
@@ -150,18 +161,6 @@ module.exports = TrackballControls = function ( object, domElement ) {
 
 	}() );
 
-  this.zoomIn = function() {
-		_zoomStart.y += 0.2;
-		_this.dispatchEvent( startEvent );
-		_this.dispatchEvent( endEvent );
-	}
-
-	this.zoomOut = function() {
-		_zoomStart.y -= 0.2;
-		_this.dispatchEvent( startEvent );
-		_this.dispatchEvent( endEvent );
-	}
-
 	this.rotateCamera = ( function() {
 
 		var axis = new THREE.Vector3(),
@@ -222,7 +221,7 @@ module.exports = TrackballControls = function ( object, domElement ) {
 
 		var factor;
 
-		if ( _state === STATE.TOUCH_ZOOM_PAN ) {
+		if ( _state === STATE.TOUCH_ZOOM ) {
 
 			factor = _touchZoomDistanceStart / _touchZoomDistanceEnd;
 			_touchZoomDistanceStart = _touchZoomDistanceEnd;
@@ -264,13 +263,26 @@ module.exports = TrackballControls = function ( object, domElement ) {
 
 			if ( mouseChange.lengthSq() ) {
 
-				mouseChange.multiplyScalar( _eye.length() * _this.panSpeed );
+				var vector_1 = new THREE.Vector3((_panEnd.x*2)-1, (_panEnd.y*2)-1, 0.5);
+				vector_1.unproject( _this.object );
+				var dir_1 = vector_1.sub( _this.object.position ).normalize();
+				var distance_1 = - _this.object.position.z / dir_1.z;
+				var pe = dir_1.multiplyScalar( distance_1 );
 
-				pan.copy( _eye ).cross( _this.object.up ).setLength( mouseChange.x );
-				pan.add( objectUp.copy( _this.object.up ).setLength( mouseChange.y ) );
+				var vector_2 = new THREE.Vector3((_panStart.x*2)-1, (_panStart.y*2)-1, 0.5);
+				vector_2.unproject( _this.object );
+				var dir_2 = vector_2.sub( _this.object.position ).normalize();
+				var distance_2 = - _this.object.position.z / dir_2.z;
+				var ps = dir_2.multiplyScalar( distance_2 );
+
+				var diff = pe.sub(ps);
+
+				pan.copy( _eye ).cross( _this.object.up ).setLength( diff.x );
+				pan.add( objectUp.copy( _this.object.up ).setLength( diff.y ) );
 
 				_this.object.position.add( pan );
 				_this.target.add( pan );
+
 
 				if ( _this.staticMoving ) {
 
@@ -373,8 +385,6 @@ module.exports = TrackballControls = function ( object, domElement ) {
 
 		if ( _this.enabled === false ) return;
 
-		window.removeEventListener( 'keydown', keydown );
-
 		_prevState = _state;
 
 		if ( _state !== STATE.NONE ) {
@@ -403,16 +413,13 @@ module.exports = TrackballControls = function ( object, domElement ) {
 
 		_state = _prevState;
 
-		window.addEventListener( 'keydown', keydown, false );
-
 	}
 
 	function mousedown( event ) {
 
-		if ( _this.enabled === false ) return;
+		this.ismousedown = true;
 
-		event.preventDefault();
-		event.stopPropagation();
+		if ( _this.enabled === false ) return;
 
 		if ( _state === STATE.NONE ) {
 
@@ -425,7 +432,7 @@ module.exports = TrackballControls = function ( object, domElement ) {
 			_moveCurr.copy( getMouseOnCircle( event.pageX, event.pageY ) );
 			_movePrev.copy( _moveCurr );
 
-		} else if ( _state === STATE.ZOOM && ! _this.noZoom ) {
+		} else if ( _state === STATE.ZOOM && ! _this.noZoom && ! _this.noMouseZoom) {
 
 			_zoomStart.copy( getMouseOnScreen( event.pageX, event.pageY ) );
 			_zoomEnd.copy( _zoomStart );
@@ -437,8 +444,8 @@ module.exports = TrackballControls = function ( object, domElement ) {
 
 		}
 
-		document.addEventListener( 'mousemove', mousemove, false );
-		document.addEventListener( 'mouseup', mouseup, false );
+		document.addEventListener( 'mousemove', mousemove.bind(this), false );
+		document.addEventListener( 'mouseup', mouseup.bind(this), false );
 
 		_this.dispatchEvent( startEvent );
 
@@ -448,15 +455,12 @@ module.exports = TrackballControls = function ( object, domElement ) {
 
 		if ( _this.enabled === false ) return;
 
-		event.preventDefault();
-		event.stopPropagation();
-
 		if ( _state === STATE.ROTATE && ! _this.noRotate ) {
 
 			_movePrev.copy( _moveCurr );
 			_moveCurr.copy( getMouseOnCircle( event.pageX, event.pageY ) );
 
-		} else if ( _state === STATE.ZOOM && ! _this.noZoom ) {
+		} else if ( _state === STATE.ZOOM && ! _this.noZoom && ! _this.noMouseZoom ) {
 
 			_zoomEnd.copy( getMouseOnScreen( event.pageX, event.pageY ) );
 
@@ -470,10 +474,9 @@ module.exports = TrackballControls = function ( object, domElement ) {
 
 	function mouseup( event ) {
 
-		if ( _this.enabled === false ) return;
+		this.ismousedown = false;
 
-		event.preventDefault();
-		event.stopPropagation();
+		if ( _this.enabled === false ) return;
 
 		_state = STATE.NONE;
 
@@ -487,29 +490,42 @@ module.exports = TrackballControls = function ( object, domElement ) {
 
 		if ( _this.enabled === false ) return;
 
-		event.preventDefault();
-		event.stopPropagation();
+		if ( ! _this.noMouseZoom ) {
 
-		var delta = 0;
+			var delta = 0;
 
-		if ( event.wheelDelta ) {
+			if ( event.wheelDelta ) {
 
-			// WebKit / Opera / Explorer 9
+				// WebKit / Opera / Explorer 9
 
-			delta = event.wheelDelta / 40;
+				delta = event.wheelDelta / 40;
 
-		} else if ( event.detail ) {
+			} else if ( event.detail ) {
 
-			// Firefox
+				// Firefox
 
-			delta = - event.detail / 3;
+				delta = - event.detail / 3;
+
+			}
+
+			_zoomStart.y += delta * 0.01;
+			_this.dispatchEvent( startEvent );
+			_this.dispatchEvent( endEvent );
 
 		}
 
-		_zoomStart.y += delta * 0.01;
+	}
+
+	this.zoomIn = function() {
+		_zoomStart.y += 0.2;
 		_this.dispatchEvent( startEvent );
 		_this.dispatchEvent( endEvent );
+	}
 
+	this.zoomOut = function() {
+		_zoomStart.y -= 0.2;
+		_this.dispatchEvent( startEvent );
+		_this.dispatchEvent( endEvent );
 	}
 
 	function touchstart( event ) {
@@ -519,29 +535,23 @@ module.exports = TrackballControls = function ( object, domElement ) {
 		switch ( event.touches.length ) {
 
 			case 1:
-				_state = STATE.TOUCH_ROTATE;
-				_moveCurr.copy( getMouseOnCircle( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY ) );
-				_movePrev.copy( _moveCurr );
-				break;
-
-			case 2:
-				_state = STATE.TOUCH_ZOOM_PAN;
-				var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
-				var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
-				_touchZoomDistanceEnd = _touchZoomDistanceStart = Math.sqrt( dx * dx + dy * dy );
-
-				var x = ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX ) / 2;
-				var y = ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY ) / 2;
+				_state = STATE.TOUCH_PAN;
+				var x = ( event.touches[ 0 ].pageX );
+				var y = ( event.touches[ 0 ].pageY );
 				_panStart.copy( getMouseOnScreen( x, y ) );
 				_panEnd.copy( _panStart );
 				break;
 
-			default:
-				_state = STATE.NONE;
+			default: // 2 or more
+				_state = STATE.TOUCH_ZOOM;
+				var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
+				var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
+				_touchZoomDistanceEnd = _touchZoomDistanceStart = Math.sqrt( dx * dx + dy * dy );
+				break;
 
 		}
-		_this.dispatchEvent( startEvent );
 
+		_this.dispatchEvent( startEvent );
 
 	}
 
@@ -555,22 +565,16 @@ module.exports = TrackballControls = function ( object, domElement ) {
 		switch ( event.touches.length ) {
 
 			case 1:
-				_movePrev.copy( _moveCurr );
-				_moveCurr.copy( getMouseOnCircle(  event.touches[ 0 ].pageX, event.touches[ 0 ].pageY ) );
-				break;
-
-			case 2:
-				var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
-				var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
-				_touchZoomDistanceEnd = Math.sqrt( dx * dx + dy * dy );
-
-				var x = ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX ) / 2;
-				var y = ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY ) / 2;
+				var x = ( event.touches[ 0 ].pageX );
+				var y = ( event.touches[ 0 ].pageY );
 				_panEnd.copy( getMouseOnScreen( x, y ) );
 				break;
 
-			default:
-				_state = STATE.NONE;
+			default: // 2 or more
+				var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
+				var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
+				_touchZoomDistanceEnd = Math.sqrt( dx * dx + dy * dy );
+				break;
 
 		}
 
@@ -582,23 +586,20 @@ module.exports = TrackballControls = function ( object, domElement ) {
 
 		switch ( event.touches.length ) {
 
-			case 1:
-				_movePrev.copy( _moveCurr );
-				_moveCurr.copy( getMouseOnCircle(  event.touches[ 0 ].pageX, event.touches[ 0 ].pageY ) );
+			case 0:
+				_state = STATE.NONE;
 				break;
 
-			case 2:
-				_touchZoomDistanceStart = _touchZoomDistanceEnd = 0;
-
-				var x = ( event.touches[ 0 ].pageX + event.touches[ 1 ].pageX ) / 2;
-				var y = ( event.touches[ 0 ].pageY + event.touches[ 1 ].pageY ) / 2;
-				_panEnd.copy( getMouseOnScreen( x, y ) );
-				_panStart.copy( _panEnd );
+			case 1:
+				_state = STATE.TOUCH_PAN;
+				var x = ( event.touches[ 0 ].pageX );
+				var y = ( event.touches[ 0 ].pageY );
+				_panStart.copy( getMouseOnScreen( x, y ) );
+				_panEnd.copy( _panStart );
 				break;
 
 		}
 
-		_state = STATE.NONE;
 		_this.dispatchEvent( endEvent );
 
 	}
@@ -626,10 +627,10 @@ module.exports = TrackballControls = function ( object, domElement ) {
 		window.removeEventListener( 'keydown', keydown, false );
 		window.removeEventListener( 'keyup', keyup, false );
 
-	}
+	};
 
 	this.domElement.addEventListener( 'contextmenu', contextmenu, false );
-	this.domElement.addEventListener( 'mousedown', mousedown, false );
+	this.domElement.addEventListener( 'mousedown', mousedown.bind(this), false );
 	this.domElement.addEventListener( 'mousewheel', mousewheel, false );
 	this.domElement.addEventListener( 'MozMousePixelScroll', mousewheel, false ); // firefox
 
@@ -646,7 +647,5 @@ module.exports = TrackballControls = function ( object, domElement ) {
 	this.update();
 
 };
-
-function preventEvent( event ) { event.preventDefault(); }
 
 TrackballControls.prototype = Object.create( THREE.EventDispatcher.prototype );
