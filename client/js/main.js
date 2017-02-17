@@ -30,6 +30,9 @@ var numberWorks = 0;
 
 var numTextures, textureLoader;
 
+var autoPanVec = -1;
+
+
 var unit_coords = [
   new THREE.Vector2(0,1.),
   new THREE.Vector2(0,0),
@@ -118,6 +121,7 @@ function init() {
     document.addEventListener( 'touchmove', onTouchMove, false);
     document.addEventListener( 'touchcancel', onTouchEnd, false);
     document.addEventListener( 'touchend', onTouchEnd, false);
+    document.addEventListener( 'mouseout', onMouseOut, false);
     renderer.domElement.addEventListener( 'mousedown', onWebGLMouseDown, false);
     renderer.domElement.addEventListener( 'mouseup', onWebGLMouseUp, false);
     $('#imageinfo')[0].addEventListener( 'touchend', onLinkTouchEnd, false);
@@ -210,23 +214,33 @@ function onWindowResize() {
 
 }
 
+function onMouseOut( event ) {
+  autoPanVec = -1;
+}
+
 function onDocumentMouseMove( event ) {
   event.preventDefault();
-
   isTouch = false;
 
+  // Don't update when panning
   if (controls.ismousedown) return;
+
 
   mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
   mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
+  autoPan(mouse)
+
+  // Autopan forces fisheye update every frame anyway
+  if (autoPanVec != -1) return;
+
+  recalculateFishEye(mouse)
+}
+
+function recalculateFishEye(mouse) {
+
   var vector = new THREE.Vector3();
-
-  vector.set(
-    ( event.clientX / window.innerWidth ) * 2 - 1,
-    - ( event.clientY / window.innerHeight ) * 2 + 1,
-    0.5 );
-
+  vector.set(mouse.x, mouse.y, 1)
   vector.unproject( camera );
 
   var dir = vector.sub( camera.position ).normalize();
@@ -260,7 +274,17 @@ function onDocumentMouseMove( event ) {
     singleGeometry.vertices[i+3].z = fisheye_trans.z*z_scaler;
   }
   singleGeometry.verticesNeedUpdate = true;
+}
 
+
+function autoPan(mouse) {
+
+  var mouseVec = new THREE.Vector3(mouse.x, mouse.y, 0)
+  if (mouseVec.length() > 0.5 && mouseVec.length() < 1.2) {
+    autoPanVec = mouseVec
+  } else {
+    autoPanVec = -1
+  }
 }
 
 function onTouchStart( event ) {
@@ -305,10 +329,21 @@ function onLinkTouchEnd( event ) {
 
 function animate() {
 
+  if (autoPanVec != -1) {
+    camera.position.addVectors(camera.position, autoPanVec)
+    controls.target.addVectors(controls.target, autoPanVec)
+    var mouse = {
+      x: autoPanVec.x,
+      y: autoPanVec.y
+    }
+    recalculateFishEye(mouse)
+  }
+
   requestAnimationFrame( animate );
   controls.update();
 
   render();
+
   stats.update();
 
 }
@@ -378,6 +413,7 @@ function render() {
   renderer.render( scene, camera );
 
 }
+
 
 function getHighResImage(index) {
   var index_str = "" + collection[index]['sequence_id'];
