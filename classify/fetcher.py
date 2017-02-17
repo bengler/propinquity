@@ -19,8 +19,8 @@ def fetch_work_details(options):
 		image_id = result['artifact.defaultMediaIdentifier']
 		object_id = result['identifier.id']
 		published_at = result['artifact.publishedDate']
-		artist = result['artifact.ingress.producer']
-		title = result['artifact.ingress.title']
+		artist = result['artifact.ingress.producer'] if 'artifact.ingress.producer' in result else None
+		title = result['artifact.ingress.title'] if 'artifact.ingress.title' in result else None
 		year_start = result['artifact.ingress.production.fromYear'] if 'artifact.ingress.production.fromYear' in result else None
 		year_end = result['artifact.ingress.production.toYear'] if 'artifact.ingress.production.toYear' in result else None
 
@@ -81,7 +81,7 @@ def fetch_new(options):
 	if options['artifact_name'] != None:
 		artifact_query = "&fq=artifact.name:%s" % options['artifact_name']
 
-	start_date = "1800-00-00T00:00:00Z"
+	start_date = "1800-01-01T00:00:00Z"
 	if options['start_date'] != None:
 		logger.info('- Looking for works since %s' % options['start_date'])
 		start_date = arrow.get(options['start_date']) \

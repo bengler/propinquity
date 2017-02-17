@@ -16,7 +16,14 @@ def build_web_files(options):
 	# create json files with the necessary fields
 	process = options['process_id']
 	initial_filename = "data/%s/%s.csv" % (process, process)
-	orig_json = pd.read_csv(initial_filename, encoding='utf-8') \
+
+	na_values = [
+		'#N/A', '#N/A N/A', '#NA', '-1.#IND', '-1.#QNAN', '-NaN',
+		'-nan', '1.#IND', '1.#QNAN', 'N/A', 'NA', 'NULL', 'NaN', 'nan'
+	]
+	new_na_values = {'artist' : na_values, 'title' : na_values}
+	orig_json = pd.read_csv(initial_filename, encoding='utf-8',
+		na_values=new_na_values, keep_default_na=False) \
 					.transpose().to_dict().values()
 	
 	# center embedding coordinates
