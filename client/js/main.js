@@ -323,7 +323,18 @@ function updateTileInfo() {
   // updates on entering/leaving tiles
 
   if ( intersects.length > 0 ) {
-    var face_index = Math.floor(intersects[0].face.a/4);
+    if ( intersects.length > 1 && ( Math.floor(intersects[0].face.a/4) != currentIntersectFace ) ) {
+      // always select the one with highest index
+      var face_index = 0;
+      for (var i = 0;i < intersects.length;i++) {
+        var intersect_face_index = Math.floor(intersects[i].face.a/4);
+        if (intersect_face_index > face_index) {
+          face_index = intersect_face_index;
+        }
+      }
+    } else {
+      var face_index = Math.floor(intersects[0].face.a/4);
+    }
     if (currentIntersectFace == -1) {
       // entering tile
       // for (var i = 0;i < 4;i++) singleGeometry.vertices[(face_index*4)+i].z = 1.0;
