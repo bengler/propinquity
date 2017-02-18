@@ -13,6 +13,7 @@ module.exports = {
         var dx = d.x - focus[0],
             dy = d.y - focus[1],
             dd = Math.sqrt(dx * dx + dy * dy);
+        dd += 1e-9; // small offset to avoid divide-by-zero
         if (!dd || dd >= radius) return {x: d.x, y: d.y, z: dd >= radius ? 1 : 10};
         var k = k0 * (1 - Math.exp(-dd * k1)) / dd * .75 + .25;
         return {x: focus[0] + dx * k, y: focus[1] + dy * k, z: Math.min(k, 10)};

@@ -1,5 +1,6 @@
 // Canvas enabled THREE
 var THREE = require("three-canvas-renderer");
+var TWEEN = require("tween.js")
 
 var TrackballControls = require('./three-trackballcontrols');
 
@@ -33,6 +34,8 @@ var numTextures, textureLoader;
 var autoPanVec = -1;
 
 var firstRender = true;
+
+var autoZoomed = false;
 
 var unit_coords = [
   new THREE.Vector2(0,1.),
@@ -179,6 +182,8 @@ function onWebGLMouseDown( event ) {
 }
 
 function onWebGLMouseUp( event ) {
+  autoZoomed = false;
+
   var x = ( event.clientX / window.innerWidth ) * 2 - 1;
   var y = - ( event.clientY / window.innerHeight ) * 2 + 1;
   var old_x = mouse_down_init_position[0];
@@ -205,6 +210,8 @@ function onMouseOut( event ) {
 
 function onDocumentMouseMove( event ) {
   event.preventDefault();
+  if (autoZoomed) return;
+
   isTouch = false;
 
   // Don't update when panning
@@ -222,19 +229,21 @@ function onDocumentMouseMove( event ) {
   recalculateFishEye(mouse)
 }
 
-function recalculateFishEye(mouse) {
+function recalculateFishEye(coords, unproject=true) {
 
-  var vector = new THREE.Vector3();
-  vector.set(mouse.x, mouse.y, 1)
-  vector.unproject( camera );
+  if (unproject) {
+    var vector = new THREE.Vector3();
+    vector.set(coords.x, coords.y, 1)
+    vector.unproject( camera );
 
-  var dir = vector.sub( camera.position ).normalize();
+    var dir = vector.sub( camera.position ).normalize();
 
-  var distance = - camera.position.z / dir.z;
+    var distance = - camera.position.z / dir.z;
 
-  pos = camera.position.clone().add( dir.multiplyScalar( distance ) );
+    coords = camera.position.clone().add( dir.multiplyScalar( distance ) );
+  }
 
-  fisheye.focus([pos.x,pos.y]);
+  fisheye.focus([coords.x,coords.y]);
 
   for (var i = 0;i < singleGeometry.vertices.length;i+=4) {
     var cur_coords = [collection[i/4]['embedding_x'],collection[i/4]['embedding_y']];
@@ -291,7 +300,7 @@ function onTouchEnd( event ) {
     updateTileInfo();
     if (currentIntersectFace >= 0) {
       var work_url = "http://samling.nasjonalmuseet.no/no/object/"+collection[currentIntersectFace].identifier
-      if (currentIntersectFace == previousFace) {
+      if (currentIntersectFace == previousFace && !autoZoomed) {
         window.open(work_url, '_blank');
       }
       var metadata = collection[currentIntersectFace];
@@ -299,6 +308,7 @@ function onTouchEnd( event ) {
         "' target='_blank'><em>"+metadata.title+"</em></a></strong>. "+metadata.yearstring+".</p>")
     }
   }
+  autoZoomed = false;
   touchMove = false;
 }
 
@@ -330,6 +340,7 @@ function animate() {
   render();
 
   stats.update();
+  TWEEN.update();
 
 }
 
@@ -391,7 +402,7 @@ function updateTileInfo() {
 
 function render() {
 
-  if (!isTouch) {
+  if (!isTouch || autoZoomed) {
     updateTileInfo();
   }
 
@@ -416,11 +427,20 @@ function render() {
     $('#ui_zoom_out').bind('touchend', onUIZoomOut);
     controls.enabled = true;
 
+    // zoom towards specific work if specified in url
+    if (queryStrings['id'] !== undefined) {
+      var workCoords = lookupCoordinates(queryStrings['id']);
+      if (workCoords !== undefined) {
+        autoZoom(workCoords);
+        // lock focus until user clicks/touches
+        autoZoomed = true;
+      }
+    }
+
     firstRender = false;
   }
 
 }
-
 
 function getHighResImage(index) {
   var index_str = "" + collection[index]['sequence_id'];
@@ -522,6 +542,48 @@ function onUIZoomOut(event) {
   event.preventDefault();
   event.stopPropagation();
   controls.zoomOut();
+}
+
+var queryStrings = (function(a) {
+  if (a == "") return {};
+  var b = {};
+  for (var i = 0; i < a.length; ++i)
+  {
+    var p=a[i].split('=', 2);
+    if (p.length == 1)
+      b[p[0]] = "";
+    else
+      b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
+  }
+  return b;
+})(window.location.search.substr(1).split('&'));
+
+function lookupCoordinates(id) {
+  for (var i = 0;i < collection.length;i++) {
+    if (collection[i].identifier == id) {
+      return [collection[i].embedding_x, collection[i].embedding_y];
+    }
+  }
+}
+
+var autoZoom = function(coords) {
+  var tween = new TWEEN.Tween(camera.position.clone())
+    .to({x : coords[0]*3, y: coords[1]*3, z : 300}, 2000)
+    .onUpdate(function() {
+      camera.position.x = this.x;
+      camera.position.y = this.y;
+      camera.position.z = this.z;
+      controls.target = new THREE.Vector3(this.x, this.y, 0);
+      // TODO : mark image somehow
+      // center fisheye on image
+      recalculateFishEye([this.x*3, this.y*3]);
+      // TODO : fisheye should fade in, not pop in as it does now 
+      // select it
+      mouse.x = 0;
+      mouse.y = 0;
+    });
+  tween.easing(TWEEN.Easing.Exponential.InOut);
+  window.setTimeout(function() {tween.start()}, 1000);
 }
 
 init();
