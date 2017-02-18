@@ -376,7 +376,7 @@ function updateTileInfo() {
       currentIntersectFace = face_index;
       // set timeout to avoid queuing lots of images on panning
       setTimeout(function() {if (currentIntersectFace == face_index) getHighResImage(face_index);}, 100);
-      singleGeometry.verticesNeedUpdate = true;
+      //singleGeometry.verticesNeedUpdate = true;
     } else if (face_index != currentIntersectFace) {
       // entering tile, leaving previous tile
       // for (var i = 0;i < 4;i++) singleGeometry.vertices[(currentIntersectFace*4)+i].z = 0.0;
@@ -387,16 +387,16 @@ function updateTileInfo() {
       currentIntersectFace = face_index;
       // set timeout to avoid queuing lots of images on panning
       setTimeout(function() {if (currentIntersectFace == face_index) getHighResImage(face_index);}, 100);
-      singleGeometry.verticesNeedUpdate = true;
+      //singleGeometry.verticesNeedUpdate = true;
     }
   } else if (currentIntersectFace != -1) {
     // leaving tile
-    for (var i = 0;i < 4;i++) singleGeometry.vertices[(currentIntersectFace*4)+i].z = 0.0;
+    //for (var i = 0;i < 4;i++) singleGeometry.vertices[(currentIntersectFace*4)+i].z = 0.0;
     removeHighResImage(currentIntersectFace);
     currentIntersectFace = -1;
     $("#imageinfo").hide();
     $("#container").removeClass("clickable");
-    singleGeometry.verticesNeedUpdate = true;
+    //singleGeometry.verticesNeedUpdate = true;
   }
 }
 
