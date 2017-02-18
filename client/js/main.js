@@ -32,6 +32,7 @@ var numTextures, textureLoader;
 
 var autoPanVec = -1;
 
+var firstRender = true;
 
 var unit_coords = [
   new THREE.Vector2(0,1.),
@@ -113,23 +114,6 @@ function init() {
     mesh = new THREE.Mesh(singleGeometry, multimaterial);
     scene.add(mesh);
 
-    $("#message").hide();
-    document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-    document.addEventListener( 'mousewheel', onMouseWheel, false);
-    document.addEventListener( 'DOMMouseScroll', onMouseWheel, false); // for firefox
-    document.addEventListener( 'touchstart', onTouchStart, false);
-    document.addEventListener( 'touchmove', onTouchMove, false);
-    document.addEventListener( 'touchcancel', onTouchEnd, false);
-    document.addEventListener( 'touchend', onTouchEnd, false);
-    document.addEventListener( 'mouseout', onMouseOut, false);
-    renderer.domElement.addEventListener( 'mousedown', onWebGLMouseDown, false);
-    renderer.domElement.addEventListener( 'mouseup', onWebGLMouseUp, false);
-    $('#imageinfo')[0].addEventListener( 'touchend', onLinkTouchEnd, false);
-    $('#ui_zoom_in').click(onUIZoomIn)
-    $('#ui_zoom_out').click(onUIZoomOut)
-    $('#ui_zoom_in').bind('touchend', onUIZoomIn);
-    $('#ui_zoom_out').bind('touchend', onUIZoomOut);
-
     animate();
   }
 
@@ -174,6 +158,7 @@ function init() {
   controls.noMouseZoom = true;
   controls.panSpeed = 0.5;
   controls.staticMoving = true;
+  controls.enabled = false;
 
   //
 
@@ -411,6 +396,28 @@ function render() {
   }
 
   renderer.render( scene, camera );
+
+  if (firstRender) {
+    $("#message").hide();
+    document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+    document.addEventListener( 'mousewheel', onMouseWheel, false);
+    document.addEventListener( 'DOMMouseScroll', onMouseWheel, false); // for firefox
+    document.addEventListener( 'touchstart', onTouchStart, false);
+    document.addEventListener( 'touchmove', onTouchMove, false);
+    document.addEventListener( 'touchcancel', onTouchEnd, false);
+    document.addEventListener( 'touchend', onTouchEnd, false);
+    document.addEventListener( 'mouseout', onMouseOut, false);
+    renderer.domElement.addEventListener( 'mousedown', onWebGLMouseDown, false);
+    renderer.domElement.addEventListener( 'mouseup', onWebGLMouseUp, false);
+    $('#imageinfo')[0].addEventListener( 'touchend', onLinkTouchEnd, false);
+    $('#ui_zoom_in').click(onUIZoomIn)
+    $('#ui_zoom_out').click(onUIZoomOut)
+    $('#ui_zoom_in').bind('touchend', onUIZoomIn);
+    $('#ui_zoom_out').bind('touchend', onUIZoomOut);
+    controls.enabled = true;
+
+    firstRender = false;
+  }
 
 }
 
