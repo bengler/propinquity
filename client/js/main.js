@@ -37,19 +37,14 @@ var firstRender = true;
 
 var autoZoomed = false;
 
-var unit_coords = [
-  new THREE.Vector2(0,1.),
-  new THREE.Vector2(0,0),
-  new THREE.Vector2(1.,0),
-  new THREE.Vector2(1.,1.),
-];
-
 var hiResTexture;
 
 var isTouch = true;
 var touchMove = false;
 
 THREE.ImageUtils.crossOrigin = '';
+
+var z_scaler = 20;
 
 function init() {
 
@@ -80,6 +75,7 @@ function init() {
     var planeMesh = new THREE.Mesh(plane);
     planeMesh.position.x = 3*collection[i]['embedding_x'];
     planeMesh.position.y = 3*collection[i]['embedding_y'];
+    planeMesh.position.z = z_scaler;
     planeMesh.updateMatrix();
     singleGeometry.merge(planeMesh.geometry, planeMesh.matrix);
   }
@@ -251,8 +247,6 @@ function recalculateFishEye(coords, unproject=true) {
 
     var x_size = collection[i]['draw_width']/2
     var y_size = collection[i]['draw_height']/2
-
-    let z_scaler = 20;
 
     var x_offset = x_size+((fisheye_trans.z-1)*0.7*x_size);
     var y_offset = y_size+((fisheye_trans.z-1)*0.7*y_size);
