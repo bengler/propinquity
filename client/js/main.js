@@ -113,6 +113,7 @@ function init() {
     }
     materials[numTextures] = new THREE.MeshBasicMaterial({ overdraw : true });
     var multimaterial = new THREE.MultiMaterial(materials);
+    singleGeometry = new THREE.BufferGeometry().fromGeometry(singleGeometry);
 
     mesh = new THREE.Mesh(singleGeometry, multimaterial);
     scene.add(mesh);
@@ -124,7 +125,6 @@ function init() {
   numTextures = mosaics.length;
   var textures = [];
   textureLoader = new THREE.TextureLoader()
-  singleGeometry.faceVertexUvs[0] = [];
   for (var i = 0;i < numTextures;i++) {
     var texture = textureLoader.load(
       "data/"+mosaics[i].image,
@@ -244,30 +244,29 @@ function recalculateFishEye(coords, unproject=true) {
   }
 
   fisheye.focus([coords.x,coords.y]);
-
-  for (var i = 0;i < singleGeometry.vertices.length;i+=4) {
-    var cur_coords = [collection[i/4]['embedding_x'],collection[i/4]['embedding_y']];
+  
+  for (var i = 0;i < collection.length;i++) {
+    var cur_coords = [collection[i]['embedding_x'],collection[i]['embedding_y']];
     var fisheye_trans = fisheye({x: 3*cur_coords[0], y: 3*cur_coords[1]});
 
-    var x_size = collection[i/4]['draw_width']/2
-    var y_size = collection[i/4]['draw_height']/2
+    var x_size = collection[i]['draw_width']/2
+    var y_size = collection[i]['draw_height']/2
 
     let z_scaler = 20;
 
-    singleGeometry.vertices[i].x = fisheye_trans.x-x_size-((fisheye_trans.z-1)*0.7*x_size);
-    singleGeometry.vertices[i].y = fisheye_trans.y+y_size+((fisheye_trans.z-1)*0.7*y_size);
-    singleGeometry.vertices[i].z = fisheye_trans.z*z_scaler;
-    singleGeometry.vertices[i+1].x = fisheye_trans.x+x_size+((fisheye_trans.z-1)*0.7*x_size);
-    singleGeometry.vertices[i+1].y = fisheye_trans.y+y_size+((fisheye_trans.z-1)*0.7*y_size);
-    singleGeometry.vertices[i+1].z = fisheye_trans.z*z_scaler;
-    singleGeometry.vertices[i+2].x = fisheye_trans.x-x_size-((fisheye_trans.z-1)*0.7*x_size);
-    singleGeometry.vertices[i+2].y = fisheye_trans.y-y_size-((fisheye_trans.z-1)*0.7*y_size);
-    singleGeometry.vertices[i+2].z = fisheye_trans.z*z_scaler;
-    singleGeometry.vertices[i+3].x = fisheye_trans.x+x_size+((fisheye_trans.z-1)*0.7*x_size);
-    singleGeometry.vertices[i+3].y = fisheye_trans.y-y_size-((fisheye_trans.z-1)*0.7*y_size);
-    singleGeometry.vertices[i+3].z = fisheye_trans.z*z_scaler;
+    var x_offset = x_size+((fisheye_trans.z-1)*0.7*x_size);
+    var y_offset = y_size+((fisheye_trans.z-1)*0.7*y_size);
+    var x_pos = fisheye_trans.x;
+    var y_pos = fisheye_trans.y;
+    var z_pos = fisheye_trans.z*z_scaler;
+    singleGeometry.attributes.position.setXYZ((i*6)  , x_pos-x_offset, y_pos+y_offset, z_pos);
+    singleGeometry.attributes.position.setXYZ((i*6)+1, x_pos-x_offset, y_pos-y_offset, z_pos);
+    singleGeometry.attributes.position.setXYZ((i*6)+2, x_pos+x_offset, y_pos+y_offset, z_pos);
+    singleGeometry.attributes.position.setXYZ((i*6)+3, x_pos-x_offset, y_pos-y_offset, z_pos);
+    singleGeometry.attributes.position.setXYZ((i*6)+4, x_pos+x_offset, y_pos-y_offset, z_pos);
+    singleGeometry.attributes.position.setXYZ((i*6)+5, x_pos+x_offset, y_pos+y_offset, z_pos);
   }
-  singleGeometry.verticesNeedUpdate = true;
+  singleGeometry.attributes.position.needsUpdate = true;
 }
 
 
@@ -354,17 +353,17 @@ function updateTileInfo() {
   // updates on entering/leaving tiles
 
   if ( intersects.length > 0 ) {
-    if ( intersects.length > 1 && ( Math.floor(intersects[0].face.a/4) != currentIntersectFace ) ) {
+    if ( intersects.length > 1 && ( Math.floor(intersects[0].face.a/6) != currentIntersectFace ) ) {
       // always select the one with highest index
       var face_index = 0;
       for (var i = 0;i < intersects.length;i++) {
-        var intersect_face_index = Math.floor(intersects[i].face.a/4);
+        var intersect_face_index = Math.floor(intersects[i].face.a/6);
         if (intersect_face_index > face_index) {
           face_index = intersect_face_index;
         }
       }
     } else {
-      var face_index = Math.floor(intersects[0].face.a/4);
+      var face_index = Math.floor(intersects[0].face.a/6);
     }
     if (currentIntersectFace == -1) {
       // entering tile
@@ -456,19 +455,30 @@ function getHighResImage(index) {
         mesh.material.needsUpdate = true;
 
         // map each painting to geometry and position
-        mesh.geometry.faceVertexUvs[0][index*2][0].x = 0;
-        mesh.geometry.faceVertexUvs[0][index*2][0].y = 1.;
-        mesh.geometry.faceVertexUvs[0][index*2][1].x = 0;
-        mesh.geometry.faceVertexUvs[0][index*2][1].y = 0;
-        mesh.geometry.faceVertexUvs[0][(index*2)+1][1].x = 1.;
-        mesh.geometry.faceVertexUvs[0][(index*2)+1][1].y = 0;
-        mesh.geometry.faceVertexUvs[0][(index*2)+1][2].x = 1.;
-        mesh.geometry.faceVertexUvs[0][(index*2)+1][2].y = 1.;
-        mesh.geometry.uvsNeedUpdate = true;
+        mesh.geometry.attributes.uv.setXY((index*6)  , 0., 1.);
+        mesh.geometry.attributes.uv.setXY((index*6)+1, 0., 0.);
+        mesh.geometry.attributes.uv.setXY((index*6)+2, 1., 1.);
+        mesh.geometry.attributes.uv.setXY((index*6)+3, 0., 0.);
+        mesh.geometry.attributes.uv.setXY((index*6)+4, 1., 0.);
+        mesh.geometry.attributes.uv.setXY((index*6)+5, 1., 1.);
+        mesh.geometry.attributes.uv.needsUpdate = true;
 
-        mesh.geometry.faces[index * 2].materialIndex = numTextures;
-        mesh.geometry.faces[(index*2) + 1].materialIndex = numTextures;
+        var mosaicIndex = Math.floor(index / mosaics[0].tiles);
+        mesh.geometry.clearGroups();
+        var mosaicStart = 0;
+        for (var i = 0;i < numTextures;i++) {
+          if (i == mosaicIndex) {
+            var splitLength = index-mosaicStart;
+            mesh.geometry.addGroup(mosaicStart*6, splitLength*6, i);
+            mesh.geometry.addGroup(index*6, 1*6, numTextures);
+            mesh.geometry.addGroup((mosaicStart+splitLength+1)*6, (mosaics[i].tiles-splitLength-1)*6, i);
+          } else {
+            mesh.geometry.addGroup(mosaicStart*6, mosaics[i].tiles*6, i);
+          }
+          mosaicStart += mosaics[i].tiles;
+        }
         mesh.geometry.groupsNeedUpdate = true;
+
       }
     }
   );
@@ -486,20 +496,21 @@ function removeHighResImage(index) {
   var right = left + 1/mw;
   var lower = upper + 1/mh;
 
-  mesh.geometry.faces[index * 2].materialIndex = mosaicIndex;
-  mesh.geometry.faces[(index*2) + 1].materialIndex = mosaicIndex;
+  mesh.geometry.clearGroups();
+  var mosaicStart = 0
+  for (var i = 0;i < mosaics.length;i++) {
+    mesh.geometry.addGroup(mosaicStart*6, mosaics[i].tiles*6, i);
+    mosaicStart += mosaics[i].tiles;
+  }
   mesh.geometry.groupsNeedUpdate = true;
 
-  mesh.geometry.faceVertexUvs[0][index*2][0].x = left;
-  mesh.geometry.faceVertexUvs[0][index*2][0].y = 1-upper;
-  mesh.geometry.faceVertexUvs[0][index*2][1].x = left;
-  mesh.geometry.faceVertexUvs[0][index*2][1].y = 1-lower;
-  mesh.geometry.faceVertexUvs[0][(index*2)+1][1].x = right;
-  mesh.geometry.faceVertexUvs[0][(index*2)+1][1].y = 1-lower;
-  mesh.geometry.faceVertexUvs[0][(index*2)+1][2].x = right;
-  mesh.geometry.faceVertexUvs[0][(index*2)+1][2].y = 1-upper;
-  mesh.geometry.uvsNeedUpdate = true;
-
+  mesh.geometry.attributes.uv.setXY((index*6)  , left, 1-upper);
+  mesh.geometry.attributes.uv.setXY((index*6)+1, left, 1-lower);
+  mesh.geometry.attributes.uv.setXY((index*6)+2, right, 1-upper);
+  mesh.geometry.attributes.uv.setXY((index*6)+3, left, 1-lower);
+  mesh.geometry.attributes.uv.setXY((index*6)+4, right, 1-lower);
+  mesh.geometry.attributes.uv.setXY((index*6)+5, right, 1-upper);
+  mesh.geometry.attributes.uv.needsUpdate = true;
 
   if (hiResTexture) {
     hiResTexture.dispose();
