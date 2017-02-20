@@ -46,6 +46,8 @@ THREE.ImageUtils.crossOrigin = '';
 
 var z_scaler = 20;
 
+var fisheyeFactor = 1;
+
 function init() {
 
   container = document.getElementById( 'container' );
@@ -225,8 +227,8 @@ function onDocumentMouseMove( event ) {
   recalculateFishEye(mouse)
 }
 
-function recalculateFishEye(coords, unproject=true) {
-
+function recalculateFishEye(coords, unproject) {
+  if (unproject === undefined) unproject = true;
   if (unproject) {
     var vector = new THREE.Vector3();
     vector.set(coords.x, coords.y, 1)
@@ -242,8 +244,9 @@ function recalculateFishEye(coords, unproject=true) {
   fisheye.focus([coords.x,coords.y]);
   
   for (var i = 0;i < collection.length;i++) {
-    var cur_coords = [collection[i]['embedding_x'],collection[i]['embedding_y']];
-    var fisheye_trans = fisheye({x: 3*cur_coords[0], y: 3*cur_coords[1]});
+    var x_coords = 3*collection[i]['embedding_x'];
+    var y_coords = 3*collection[i]['embedding_y'];
+    var fisheye_trans = fisheye({x: x_coords, y: y_coords}, fisheyeFactor);
 
     var x_size = collection[i]['draw_width']/2
     var y_size = collection[i]['draw_height']/2
@@ -574,21 +577,25 @@ function lookupCoordinates(id) {
 var autoZoom = function(coords) {
   var tween = new TWEEN.Tween(camera.position.clone())
     .to({x : coords[0]*3, y: coords[1]*3, z : 300}, 2000)
-    .onUpdate(function() {
+    .onUpdate(function(progress) {
       camera.position.x = this.x;
       camera.position.y = this.y;
       camera.position.z = this.z;
       controls.target = new THREE.Vector3(this.x, this.y, 0);
       // TODO : mark image somehow
+      // fade fisheye in
+      fisheyeFactor = progress;
       // center fisheye on image
-      recalculateFishEye([this.x*3, this.y*3]);
-      // TODO : fisheye should fade in, not pop in as it does now 
-      // select it
+      recalculateFishEye({x : coords[0]*3, y : coords[1]*3}, false);
+    })
+    .onComplete(function() {
+      // select work
       mouse.x = 0;
       mouse.y = 0;
-    });
+    })
   tween.easing(TWEEN.Easing.Exponential.InOut);
-  window.setTimeout(function() {tween.start()}, 1000);
+  tween.delay(1000);
+  tween.start();
 }
 
 init();

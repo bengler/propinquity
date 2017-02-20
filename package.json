@@ -17,7 +17,7 @@
     "three-trackballcontrols": "0.0.5",
     "three.js-projector": "^3.0.6",
     "webpack": "^2.2.1",
-    "tween.js": "^16.6.0"
+    "tween.js": "16.6.0"
   },
   "devDependencies": {
     "uglify-js": "^2.7.5",
