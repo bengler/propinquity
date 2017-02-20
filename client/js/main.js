@@ -350,7 +350,7 @@ function updateTileInfo() {
   // updates on entering/leaving tiles
 
   if ( intersects.length > 0 ) {
-    if ( intersects.length > 1 && ( Math.floor(intersects[0].face.a/6) != currentIntersectFace ) ) {
+    if ( isTouch && intersects.length > 1 && ( Math.floor(intersects[0].face.a/6) != currentIntersectFace ) ) {
       // always select the one with highest index
       var face_index = 0;
       for (var i = 0;i < intersects.length;i++) {
