@@ -410,7 +410,7 @@ function render() {
     document.addEventListener( 'mousewheel', onMouseWheel, false);
     document.addEventListener( 'DOMMouseScroll', onMouseWheel, false); // for firefox
     document.addEventListener( 'touchstart', onTouchStart, false);
-    document.addEventListener( 'touchmove', onTouchMove, false);
+    renderer.domElement.addEventListener( 'touchmove', onTouchMove, false);
     document.addEventListener( 'touchcancel', onTouchEnd, false);
     document.addEventListener( 'touchend', onTouchEnd, false);
     document.addEventListener( 'mouseout', onMouseOut, false);
