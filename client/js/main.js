@@ -48,22 +48,40 @@ var z_scaler = 20;
 
 var fisheyeFactor = 1;
 
+var collectionWidth, collectionHeight;
+
 function init() {
 
   container = document.getElementById( 'container' );
 
+  // 
+
+  for (var i = 0;i < mosaics.length;i++) {
+    numberWorks += mosaics[i]["tiles"];
+  }
+
+  var minX = minY = Infinity;
+  var maxX = maxY = -Infinity;
+  for (var i = 0;i < numberWorks;i++) {
+    if (collection[i]['embedding_x'] > maxX) maxX = collection[i]['embedding_x'];
+    if (collection[i]['embedding_x'] < minX) minX = collection[i]['embedding_x'];
+    if (collection[i]['embedding_y'] > maxY) maxY = collection[i]['embedding_y'];
+    if (collection[i]['embedding_y'] < minY) minY = collection[i]['embedding_y'];
+  }
+  collectionWidth = 3*(maxX-minX);
+  collectionHeight = 3*(maxY-minY);
+
+  // calculate needed fov to fit all works in view
+  var fov = calcNeededFov(collectionWidth, collectionHeight);
+
   //
 
-  camera = new THREE.PerspectiveCamera( 27, window.innerWidth / window.innerHeight, 1, 3500 );
+  camera = new THREE.PerspectiveCamera( fov, window.innerWidth / window.innerHeight, 1, 3500 );
   camera.position.z = 2000;
 
   scene = new THREE.Scene();
 
   //
-
-  for (var i = 0;i < mosaics.length;i++) {
-    numberWorks += mosaics[i]["tiles"];
-  }
 
   // create geometry and merge into one geometry
   singleGeometry = new THREE.Geometry();
@@ -195,6 +213,7 @@ function onWebGLMouseUp( event ) {
 
 function onWindowResize() {
 
+  camera.fov = calcNeededFov(collectionWidth, collectionHeight);
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
 
@@ -596,6 +615,15 @@ var autoZoom = function(coords) {
   tween.easing(TWEEN.Easing.Exponential.InOut);
   tween.delay(1000);
   tween.start();
+}
+
+function calcNeededFov(width, height) {
+  var dist = 2000;
+  var aspect = window.innerWidth / window.innerHeight;
+  var widthfov = 2 * Math.atan( ( width*1.1 / aspect ) / ( 2 * dist ) ) * ( 180 / Math.PI )
+  var heightfov = 2 * Math.atan( height*1.1 / ( 2 * dist ) ) * ( 180 / Math.PI );
+  var fov = (widthfov > heightfov) ? widthfov : heightfov;
+  return fov
 }
 
 init();
