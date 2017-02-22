@@ -219,6 +219,8 @@ function onWindowResize() {
 
   renderer.setSize( window.innerWidth, window.innerHeight );
 
+  controls.handleResize();
+
 }
 
 function onMouseOut( event ) {
