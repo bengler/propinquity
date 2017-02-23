@@ -171,8 +171,8 @@ function init() {
   container.appendChild( renderer.domElement );
 
   controls = new TrackballControls( camera, renderer.domElement );
-  controls.minDistance = 100;
-  controls.maxDistance = 3000;
+  controls.minDistance = 225;
+  controls.maxDistance = 2200;
   controls.noRotate = true;
   controls.noMouseZoom = true;
   controls.panSpeed = 0.5;
@@ -300,6 +300,7 @@ function autoPan(mouse) {
 
 function onTouchStart( event ) {
   isTouch = true;
+  controls.minDistance = 55;
 }
 
 function onTouchMove( event ) {
@@ -546,13 +547,19 @@ function onMouseWheel(event) {
   vector.sub(camera.position);
   var move = vector.setLength(camera.position.length()*factor);
   if (event.deltaY < 0 || event.detail < 0) {
-    if ((move.z + camera.position.z) >= controls.minDistance) {
+    if ((move.z + camera.position.z) < controls.minDistance) {
+      move.z = controls.minDistance - camera.position.z;
+    }
+    if (move.z < 0) {
       camera.position.addVectors(camera.position, move);
       move.z = 0;
       controls.target.addVectors(controls.target, move);
     }
   } else {
-    if ((camera.position.z - move.z) <= controls.maxDistance) {
+    if ((camera.position.z - move.z) > controls.maxDistance) {
+      move.z = camera.position.z - controls.maxDistance;
+    }
+    if (move.z < 0) {
       camera.position.subVectors(camera.position, move);
       move.z = 0;
       controls.target.subVectors(controls.target, move);
