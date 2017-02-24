@@ -437,7 +437,7 @@ function render() {
 
   if (firstRender) {
     $("#message").hide();
-    document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+    renderer.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
     document.addEventListener( 'mousewheel', onMouseWheel, false);
     document.addEventListener( 'DOMMouseScroll', onMouseWheel, false); // for firefox
     document.addEventListener( 'touchstart', onTouchStart, false);
@@ -448,10 +448,12 @@ function render() {
     renderer.domElement.addEventListener( 'mousedown', onWebGLMouseDown, false);
     renderer.domElement.addEventListener( 'mouseup', onWebGLMouseUp, false);
     $('#imageinfo')[0].addEventListener( 'touchend', onLinkTouchEnd, false);
-    $('#ui_zoom_in').click(onUIZoomIn)
-    $('#ui_zoom_out').click(onUIZoomOut)
+    $('#ui_zoom_in').click(onUIZoomIn);
+    $('#ui_zoom_out').click(onUIZoomOut);
+    $('#ui_reset').click(onUIReset);
     $('#ui_zoom_in').bind('touchend', onUIZoomIn);
     $('#ui_zoom_out').bind('touchend', onUIZoomOut);
+    $('#ui_reset').bind('touchend', onUIReset);
     controls.enabled = true;
 
     // zoom towards specific work if specified in url
@@ -587,6 +589,12 @@ function onUIZoomOut(event) {
   event.preventDefault();
   event.stopPropagation();
   controls.zoomOut();
+}
+
+function onUIReset(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  controls.reset();
 }
 
 var queryStrings = (function(a) {
