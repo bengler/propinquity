@@ -344,7 +344,7 @@ function onLinkTouchEnd( event ) {
 
 function animate() {
 
-  if (autoPanVec != -1) {
+  if (autoPanVec != -1 && !controls.ismousedown) {
     var temp = autoPanVec.clone();
     var new_x = controls.target.x + autoPanVec.x;
     var new_y = controls.target.y + autoPanVec.y;
