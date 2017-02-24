@@ -178,6 +178,8 @@ function init() {
   controls.panSpeed = 0.5;
   controls.staticMoving = true;
   controls.enabled = false;
+  controls.maxPanX = collectionWidth/2;
+  controls.maxPanY = collectionHeight/2;
 
   //
 
@@ -291,7 +293,7 @@ function recalculateFishEye(coords, unproject) {
 function autoPan(mouse) {
 
   var mouseVec = new THREE.Vector3(mouse.x, mouse.y, 0)
-  if (mouseVec.length() > 0.5 && mouseVec.length() < 1.2) {
+  if (mouseVec.length() > 0.5 && mouseVec.length() < 2) {
     autoPanVec = mouseVec
   } else {
     autoPanVec = -1
@@ -343,8 +345,15 @@ function onLinkTouchEnd( event ) {
 function animate() {
 
   if (autoPanVec != -1) {
-    camera.position.addVectors(camera.position, autoPanVec)
-    controls.target.addVectors(controls.target, autoPanVec)
+    var temp = autoPanVec.clone();
+    var new_x = controls.target.x + autoPanVec.x;
+    var new_y = controls.target.y + autoPanVec.y;
+    if (autoPanVec.x < 0 && new_x < -collectionWidth/2) temp.x = 0;
+    if (autoPanVec.x > 0 && new_x > collectionWidth/2) temp.x = 0;
+    if (autoPanVec.y < 0 && new_y < -collectionHeight/2) temp.y = 0;
+    if (autoPanVec.y > 0 && new_y > collectionHeight/2) temp.y = 0;
+    camera.position.addVectors(camera.position, temp);
+    controls.target.addVectors(controls.target, temp);
     var mouse = {
       x: autoPanVec.x,
       y: autoPanVec.y

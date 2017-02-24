@@ -51,6 +51,9 @@ module.exports = TrackballControls = function ( object, domElement ) {
 
 	this.ismousedown = false;
 
+	this.maxPanX = Infinity;
+	this.maxPanY = Infinity;
+
 	// internals
 
 	this.target = new THREE.Vector3();
@@ -280,6 +283,11 @@ module.exports = TrackballControls = function ( object, domElement ) {
 				pan.copy( _eye ).cross( _this.object.up ).setLength( diff.x );
 				pan.add( objectUp.copy( _this.object.up ).setLength( diff.y ) );
 
+				if (pan.x < 0 && (_this.object.position.x + pan.x) < -this.maxPanX) pan.x = 0;
+				if (pan.x > 0 && (_this.object.position.x + pan.x) > this.maxPanX) pan.x = 0;
+				if (pan.y < 0 && (_this.object.position.y + pan.y) < -this.maxPanY) pan.y = 0;
+				if (pan.y > 0 && (_this.object.position.y + pan.y) > this.maxPanY) pan.y = 0;
+				
 				_this.object.position.add( pan );
 				_this.target.add( pan );
 
