@@ -548,7 +548,7 @@ function removeHighResImage(index) {
 }
 
 function onMouseWheel(event) {
-  var factor = 0.1;
+  var factor = 0.05;
 
   var mX = ( event.clientX / window.innerWidth ) * 2 - 1;
   var mY = - ( event.clientY / window.innerHeight ) * 2 + 1;
