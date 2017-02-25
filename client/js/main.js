@@ -50,6 +50,8 @@ var fisheyeFactor = 1;
 
 var collectionWidth, collectionHeight;
 
+var dataPath;
+
 function init() {
 
   container = document.getElementById( 'container' );
@@ -143,7 +145,7 @@ function init() {
   textureLoader = new THREE.TextureLoader()
   for (var i = 0;i < numTextures;i++) {
     var texture = textureLoader.load(
-      "data/"+mosaics[i].image,
+      dataPath+mosaics[i].image,
       function(texture) {
         texture.flipY = true;
         texturesLoaded += 1;
@@ -652,4 +654,17 @@ function calcNeededFov(width, height) {
   return fov
 }
 
-init();
+function loadScripts(url, onSuccess) {
+  var el = document.createElement('script');
+  el.src = url;
+  el.onload = onSuccess;
+  document.body.appendChild(el);
+}
+
+// load collection and initialize
+if (queryStrings['collection'] !== undefined) {
+  dataPath = './data/'+queryStrings['collection']+'/';
+} else {
+  dataPath = './data/painting/';
+}
+loadScripts(dataPath+'collection.js',init);
