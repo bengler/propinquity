@@ -330,7 +330,18 @@ function onTouchEnd( event ) {
         "' target='_blank'><em>"+metadata.title+"</em></a></strong>. "+metadata.yearstring+".</p>";
     }
   }
-  autoZoomed = false;
+  if (autoZoomed) {
+    /*var workCoords = lookupCoordinates(queryStrings['id']);
+    var tween = new TWEEN.Tween({x:1})
+      .to({x : 0}, 2000)
+      .onUpdate(function() {
+        fisheyeFactor = this.x;
+        recalculateFishEye({x : 3*workCoords[0], y : 3*workCoords[1]}, false);
+      })
+    tween.easing(TWEEN.Easing.Exponential.InOut);
+    tween.start();*/
+    autoZoomed = false;
+  }
   touchMove = false;
 }
 
