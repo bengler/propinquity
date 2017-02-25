@@ -324,8 +324,8 @@ function onTouchEnd( event ) {
         window.open(work_url, '_blank');
       }
       var metadata = collection[currentIntersectFace];
-      $("#imageinfo").html("<p><strong>"+metadata.artist+", <a href='"+work_url+
-        "' target='_blank'><em>"+metadata.title+"</em></a></strong>. "+metadata.yearstring+".</p>")
+      document.getElementById("imageinfo").innerHTML = "<p><strong>"+metadata.artist+", <a href='"+work_url+
+        "' target='_blank'><em>"+metadata.title+"</em></a></strong>. "+metadata.yearstring+".</p>";
     }
   }
   autoZoomed = false;
@@ -397,9 +397,9 @@ function updateTileInfo() {
       // entering tile
       // for (var i = 0;i < 4;i++) singleGeometry.vertices[(face_index*4)+i].z = 1.0;
       var metadata = collection[face_index];
-      $("#imageinfo").html("<p><strong>"+metadata.artist+", <em>"+metadata.title+"</em></strong>. "+metadata.yearstring+".</p>")
-      $("#imageinfo").show();
-      $("#container").addClass("clickable");
+      document.getElementById("imageinfo").innerHTML = "<p><strong>"+metadata.artist+", <em>"+metadata.title+"</em></strong>. "+metadata.yearstring+".</p>";
+      document.getElementById("imageinfo").style.display = "block";
+      document.getElementById("container").setAttribute("class","clickable");
       currentIntersectFace = face_index;
       // set timeout to avoid queuing lots of images on panning
       setTimeout(function() {if (currentIntersectFace == face_index) getHighResImage(face_index);}, 100);
@@ -409,7 +409,7 @@ function updateTileInfo() {
       // for (var i = 0;i < 4;i++) singleGeometry.vertices[(currentIntersectFace*4)+i].z = 0.0;
       // for (var i = 0;i < 4;i++) singleGeometry.vertices[(face_index*4)+i].z = 1.0;
       var metadata = collection[face_index];
-      $("#imageinfo").html("<p><strong>"+metadata.artist+", <em>"+metadata.title+"</em></strong>. "+metadata.yearstring+".</p>")
+      document.getElementById("imageinfo").innerHTML = "<p><strong>"+metadata.artist+", <em>"+metadata.title+"</em></strong>. "+metadata.yearstring+".</p>";
       removeHighResImage(currentIntersectFace);
       currentIntersectFace = face_index;
       // set timeout to avoid queuing lots of images on panning
@@ -421,8 +421,8 @@ function updateTileInfo() {
     //for (var i = 0;i < 4;i++) singleGeometry.vertices[(currentIntersectFace*4)+i].z = 0.0;
     removeHighResImage(currentIntersectFace);
     currentIntersectFace = -1;
-    $("#imageinfo").hide();
-    $("#container").removeClass("clickable");
+    document.getElementById("imageinfo").style.display = "none";
+    document.getElementById("container").setAttribute("class","");
     //singleGeometry.verticesNeedUpdate = true;
   }
 }
@@ -436,7 +436,7 @@ function render() {
   renderer.render( scene, camera );
 
   if (firstRender) {
-    $("#message").hide();
+    document.getElementById("message").style.display = "none";
     renderer.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
     document.addEventListener( 'mousewheel', onMouseWheel, false);
     document.addEventListener( 'DOMMouseScroll', onMouseWheel, false); // for firefox
@@ -447,13 +447,13 @@ function render() {
     document.addEventListener( 'mouseout', onMouseOut, false);
     renderer.domElement.addEventListener( 'mousedown', onWebGLMouseDown, false);
     renderer.domElement.addEventListener( 'mouseup', onWebGLMouseUp, false);
-    $('#imageinfo')[0].addEventListener( 'touchend', onLinkTouchEnd, false);
-    $('#ui_zoom_in').click(onUIZoomIn);
-    $('#ui_zoom_out').click(onUIZoomOut);
-    $('#ui_reset').click(onUIReset);
-    $('#ui_zoom_in').bind('touchend', onUIZoomIn);
-    $('#ui_zoom_out').bind('touchend', onUIZoomOut);
-    $('#ui_reset').bind('touchend', onUIReset);
+    document.getElementById("imageinfo").addEventListener( 'touchend', onLinkTouchEnd, false);
+    document.getElementById("ui_zoom_in").addEventListener("click", onUIZoomIn, false);
+    document.getElementById("ui_zoom_in").addEventListener("touchend", onUIZoomIn, false);
+    document.getElementById("ui_zoom_out").addEventListener("click", onUIZoomOut, false);
+    document.getElementById("ui_zoom_out").addEventListener("touchend", onUIZoomOut, false);
+    document.getElementById("ui_reset").addEventListener("click", onUIReset, false);
+    document.getElementById("ui_reset").addEventListener("touchend", onUIReset, false);
     controls.enabled = true;
 
     // zoom towards specific work if specified in url
