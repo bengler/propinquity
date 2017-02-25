@@ -633,16 +633,18 @@ function lookupCoordinates(id) {
 }
 
 var autoZoom = function(coords) {
-  var tween = new TWEEN.Tween(camera.position.clone())
-    .to({x : coords[0]*3, y: coords[1]*3, z : 300}, 2000)
-    .onUpdate(function(progress) {
+  var tweenVars = camera.position.clone();
+  tweenVars.factor = 0;
+  var tween = new TWEEN.Tween(tweenVars)
+    .to({x : coords[0]*3, y: coords[1]*3, z : 300, factor : 1}, 2000)
+    .onUpdate(function() {
       camera.position.x = this.x;
       camera.position.y = this.y;
       camera.position.z = this.z;
       controls.target = new THREE.Vector3(this.x, this.y, 0);
       // TODO : mark image somehow
       // fade fisheye in
-      fisheyeFactor = progress;
+      fisheyeFactor = this.factor;
       // center fisheye on image
       recalculateFishEye({x : coords[0]*3, y : coords[1]*3}, false);
     })
