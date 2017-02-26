@@ -12,7 +12,7 @@
   "dependencies": {
     "css-loader": "^0.26.1",
     "style-loader": "^0.13.1",
-    "three": "^0.83.0",
+    "three": "0.83.0",
     "three-canvas-renderer": "^1.0.1",
     "three-trackballcontrols": "0.0.5",
     "three.js-projector": "^3.0.6",
