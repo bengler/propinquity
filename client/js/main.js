@@ -1,5 +1,8 @@
 var TWEEN = require("tween.js")
 
+require("imports-loader?THREE=three!./DDSLoader");
+require("imports-loader?THREE=three!./PVRLoader");
+
 var TrackballControls = require('./three-trackballcontrols');
 
 var Fisheye = require('./Fisheye')
@@ -27,7 +30,7 @@ var mouse_down_init_position;
 
 var numberWorks = 0;
 
-var numTextures, textureLoader;
+var numTextures, textureLoader, jpgTextureLoader;
 
 var autoPanVec = -1;
 
@@ -57,15 +60,29 @@ var minTouchDist, minFisheyeDist;
 
 var maxFisheyeZ;
 
+var textureFormat;
+
+var textureLoaders = {
+  's3tc' : THREE.DDSLoader,
+  'pvrtc' : THREE.PVRLoader,
+  'etc1' : THREE.PVRLoader,
+  'jpg' : THREE.TextureLoader
+}
+
 function init() {
 
   container = document.getElementById( 'container' );
 
   if ( Detector.webgl ) {
-  //if ( false ) {
     renderer = new THREE.WebGLRenderer( { antialias: false, alpha : true, logarithmicDepthBuffer: true  } );
+    var availableExtensions = renderer.context.getSupportedExtensions();
+    if (availableExtensions.indexOf("WEBGL_compressed_texture_s3tc") > -1) textureFormat = "s3tc";
+    else if (availableExtensions.indexOf("WEBGL_compressed_texture_pvrtc") > -1 || availableExtensions.indexOf("WEBKIT_WEBGL_compressed_texture_pvrtc") > -1) textureFormat = "pvrtc";
+    else if (availableExtensions.indexOf("WEBGL_compressed_texture_etc1") > -1) textureFormat = "etc1";
+    else textureFormat = "jpg";
   } else {
     renderer = new THREE.CanvasRenderer( { antialias: false, alpha : true } );
+    textureFormat = "jpg";
     mosaics = canvas_mosaics;
   }
   renderer.setClearColor( 0x333333 );
@@ -152,10 +169,10 @@ function init() {
         var right = left + tSize/pW;
         var lower = upper + tSize/pH;
         var coords = [
-          new THREE.Vector2(left,1-upper),
-          new THREE.Vector2(left,1-lower),
-          new THREE.Vector2(right,1-lower),
-          new THREE.Vector2(right,1-upper),
+          new THREE.Vector2(left,upper),
+          new THREE.Vector2(left,lower),
+          new THREE.Vector2(right,lower),
+          new THREE.Vector2(right,upper),
         ];
         singleGeometry.faceVertexUvs[0][totalVertices*2] = [ coords[0], coords[1], coords[3] ];
         singleGeometry.faceVertexUvs[0][(totalVertices*2) + 1] = [ coords[1], coords[2], coords[3] ];
@@ -179,12 +196,13 @@ function init() {
   var texturesLoaded = 0;
   numTextures = mosaics.length;
   var textures = [];
-  textureLoader = new THREE.TextureLoader()
+  jpgTextureLoader = new textureLoaders['jpg']();
+  textureLoader = new textureLoaders[textureFormat]();
   for (var i = 0;i < numTextures;i++) {
     var texture = textureLoader.load(
-      dataPath+mosaics[i].image,
+      dataPath + mosaics[i].image[textureFormat],
       function(texture) {
-        texture.flipY = true;
+        texture.flipY = false;
         texturesLoaded += 1;
         if (texturesLoaded == numTextures) loadGeometry();
       }
@@ -533,7 +551,7 @@ function render() {
 function getHighResImage(index) {
   var index_str = "" + collection[index]['sequence_id'];
   var image_filename = "0000".substring(0, 4 - index_str.length) + index_str;
-  hiResTexture = textureLoader.load(
+  hiResTexture = jpgTextureLoader.load(
     'https://mm.dimu.org/image/'+collection[index]['image_id']+'?dimension=400x400',
     //'/data/painting/images/'+image_filename+".jpg",
     function (texture) {
@@ -596,12 +614,12 @@ function removeHighResImage(index) {
   }
   mesh.geometry.groupsNeedUpdate = true;
 
-  mesh.geometry.attributes.uv.setXY((index*6)  , left, 1-upper);
-  mesh.geometry.attributes.uv.setXY((index*6)+1, left, 1-lower);
-  mesh.geometry.attributes.uv.setXY((index*6)+2, right, 1-upper);
-  mesh.geometry.attributes.uv.setXY((index*6)+3, left, 1-lower);
-  mesh.geometry.attributes.uv.setXY((index*6)+4, right, 1-lower);
-  mesh.geometry.attributes.uv.setXY((index*6)+5, right, 1-upper);
+  mesh.geometry.attributes.uv.setXY((index*6)  , left, upper);
+  mesh.geometry.attributes.uv.setXY((index*6)+1, left, lower);
+  mesh.geometry.attributes.uv.setXY((index*6)+2, right, upper);
+  mesh.geometry.attributes.uv.setXY((index*6)+3, left, lower);
+  mesh.geometry.attributes.uv.setXY((index*6)+4, right, lower);
+  mesh.geometry.attributes.uv.setXY((index*6)+5, right, upper);
   mesh.geometry.attributes.uv.needsUpdate = true;
 
   if (hiResTexture) {
