@@ -283,9 +283,9 @@ module.exports = TrackballControls = function ( object, domElement ) {
 				pan.copy( _eye ).cross( _this.object.up ).setLength( diff.x );
 				pan.add( objectUp.copy( _this.object.up ).setLength( diff.y ) );
 
-				if (pan.x < 0 && (_this.object.position.x + pan.x) < -this.maxPanX) pan.x = 0;
+				if (pan.x < 0 && (_this.object.position.x + pan.x) < this.minPanX) pan.x = 0;
 				if (pan.x > 0 && (_this.object.position.x + pan.x) > this.maxPanX) pan.x = 0;
-				if (pan.y < 0 && (_this.object.position.y + pan.y) < -this.maxPanY) pan.y = 0;
+				if (pan.y < 0 && (_this.object.position.y + pan.y) < this.minPanY) pan.y = 0;
 				if (pan.y > 0 && (_this.object.position.y + pan.y) > this.maxPanY) pan.y = 0;
 				
 				_this.object.position.add( pan );

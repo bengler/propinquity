@@ -52,6 +52,9 @@ var collectionWidth, collectionHeight;
 
 var dataPath;
 
+var minX = minY = Infinity;
+var maxX = maxY = -Infinity;
+
 function init() {
 
   container = document.getElementById( 'container' );
@@ -62,8 +65,6 @@ function init() {
     numberWorks += mosaics[i]["tiles"];
   }
 
-  var minX = minY = Infinity;
-  var maxX = maxY = -Infinity;
   for (var i = 0;i < numberWorks;i++) {
     if (collection[i]['embedding_x'] > maxX) maxX = collection[i]['embedding_x'];
     if (collection[i]['embedding_x'] < minX) minX = collection[i]['embedding_x'];
@@ -180,8 +181,10 @@ function init() {
   controls.panSpeed = 0.5;
   controls.staticMoving = true;
   controls.enabled = false;
-  controls.maxPanX = collectionWidth/2;
-  controls.maxPanY = collectionHeight/2;
+  controls.maxPanX = 3*maxX;
+  controls.minPanX = 3*minX;
+  controls.maxPanY = 3*maxY;
+  controls.minPanY = 3*minY;
 
   //
 
@@ -361,10 +364,10 @@ function animate() {
     var temp = autoPanVec.clone();
     var new_x = controls.target.x + autoPanVec.x;
     var new_y = controls.target.y + autoPanVec.y;
-    if (autoPanVec.x < 0 && new_x < -collectionWidth/2) temp.x = 0;
-    if (autoPanVec.x > 0 && new_x > collectionWidth/2) temp.x = 0;
-    if (autoPanVec.y < 0 && new_y < -collectionHeight/2) temp.y = 0;
-    if (autoPanVec.y > 0 && new_y > collectionHeight/2) temp.y = 0;
+    if (autoPanVec.x < 0 && new_x < 3*minX) temp.x = 0;
+    if (autoPanVec.x > 0 && new_x > 3*maxX) temp.x = 0;
+    if (autoPanVec.y < 0 && new_y < 3*minY) temp.y = 0;
+    if (autoPanVec.y > 0 && new_y > 3*maxY) temp.y = 0;
     camera.position.addVectors(camera.position, temp);
     controls.target.addVectors(controls.target, temp);
     var mouse = {
