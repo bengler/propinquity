@@ -97,7 +97,7 @@ function init() {
     var planeMesh = new THREE.Mesh(plane);
     planeMesh.position.x = 3*collection[i]['embedding_x'];
     planeMesh.position.y = 3*collection[i]['embedding_y'];
-    planeMesh.position.z = z_scaler;
+    planeMesh.position.z = z_scaler+i*0.00001;
     planeMesh.updateMatrix();
     singleGeometry.merge(planeMesh.geometry, planeMesh.matrix);
   }
@@ -280,7 +280,7 @@ function recalculateFishEye(coords, unproject) {
     var y_offset = y_size+((fisheye_trans.z-1)*0.7*y_size);
     var x_pos = fisheye_trans.x;
     var y_pos = fisheye_trans.y;
-    var z_pos = fisheye_trans.z*z_scaler;
+    var z_pos = fisheye_trans.z*z_scaler + i*0.00001;
     singleGeometry.attributes.position.setXYZ((i*6)  , x_pos-x_offset, y_pos+y_offset, z_pos);
     singleGeometry.attributes.position.setXYZ((i*6)+1, x_pos-x_offset, y_pos-y_offset, z_pos);
     singleGeometry.attributes.position.setXYZ((i*6)+2, x_pos+x_offset, y_pos+y_offset, z_pos);
@@ -394,49 +394,54 @@ function updateTileInfo() {
   // updates on entering/leaving tiles
 
   if ( intersects.length > 0 ) {
-    if ( isTouch && intersects.length > 1 && ( Math.floor(intersects[0].face.a/6) != currentIntersectFace ) ) {
-      // always select the one with highest index
-      var face_index = 0;
-      for (var i = 0;i < intersects.length;i++) {
-        var intersect_face_index = Math.floor(intersects[i].face.a/6);
-        if (intersect_face_index > face_index) {
-          face_index = intersect_face_index;
-        }
-      }
-    } else {
-      var face_index = Math.floor(intersects[0].face.a/6);
-    }
+    var face_index = Math.floor(intersects[0].face.a/6);
+
     if (currentIntersectFace == -1) {
       // entering tile
-      // for (var i = 0;i < 4;i++) singleGeometry.vertices[(face_index*4)+i].z = 1.0;
       var metadata = collection[face_index];
       document.getElementById("imageinfo").innerHTML = "<p><strong>"+metadata.artist+", <em>"+metadata.title+"</em></strong>. "+metadata.yearstring+".</p>";
       document.getElementById("imageinfo").style.display = "block";
       document.getElementById("container").setAttribute("class","clickable");
       currentIntersectFace = face_index;
+      if ( isTouch ) {
+        // raise selected tile
+        for (var i = 0;i < 6;i++) {
+          singleGeometry.attributes.position.setZ((currentIntersectFace*6)+i, singleGeometry.attributes.position.getZ((currentIntersectFace*6)+i) + 1.0);
+        }
+        singleGeometry.attributes.position.needsUpdate = true;
+      }
       // set timeout to avoid queuing lots of images on panning
       setTimeout(function() {if (currentIntersectFace == face_index) getHighResImage(face_index);}, 100);
-      //singleGeometry.verticesNeedUpdate = true;
     } else if (face_index != currentIntersectFace) {
       // entering tile, leaving previous tile
-      // for (var i = 0;i < 4;i++) singleGeometry.vertices[(currentIntersectFace*4)+i].z = 0.0;
-      // for (var i = 0;i < 4;i++) singleGeometry.vertices[(face_index*4)+i].z = 1.0;
       var metadata = collection[face_index];
       document.getElementById("imageinfo").innerHTML = "<p><strong>"+metadata.artist+", <em>"+metadata.title+"</em></strong>. "+metadata.yearstring+".</p>";
       removeHighResImage(currentIntersectFace);
+      if ( isTouch ) {
+        // lower previous selected tile and raise new selected tile
+        for (var i = 0;i < 6;i++) {
+          singleGeometry.attributes.position.setZ((currentIntersectFace*6)+i, singleGeometry.attributes.position.getZ((currentIntersectFace*6)+i) - 1.0);
+          singleGeometry.attributes.position.setZ((face_index*6)+i, singleGeometry.attributes.position.getZ((face_index*6)+i) + 1.0);
+        }
+        singleGeometry.attributes.position.needsUpdate = true;
+      }
       currentIntersectFace = face_index;
       // set timeout to avoid queuing lots of images on panning
       setTimeout(function() {if (currentIntersectFace == face_index) getHighResImage(face_index);}, 100);
-      //singleGeometry.verticesNeedUpdate = true;
     }
   } else if (currentIntersectFace != -1) {
     // leaving tile
-    //for (var i = 0;i < 4;i++) singleGeometry.vertices[(currentIntersectFace*4)+i].z = 0.0;
+    if ( isTouch ) {
+      // lower previous selected tile
+      for (var i = 0;i < 6;i++) {
+        singleGeometry.attributes.position.setZ((currentIntersectFace*6)+i, singleGeometry.attributes.position.getZ((currentIntersectFace*6)+i) - 1.0);
+      }
+      singleGeometry.attributes.position.needsUpdate = true;
+    }
     removeHighResImage(currentIntersectFace);
     currentIntersectFace = -1;
     document.getElementById("imageinfo").style.display = "none";
     document.getElementById("container").setAttribute("class","");
-    //singleGeometry.verticesNeedUpdate = true;
   }
 }
 
