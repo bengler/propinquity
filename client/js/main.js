@@ -21,9 +21,9 @@ var pos;
 
 var currentIntersectFace = -1;
 
-var fisheye = Fisheye.circular().radius(200).distortion(5);
+var tileSize = 20/3; // initial size of works
 
-var tileSize = 20; // initial size of works
+var fisheye = Fisheye.circular().radius(tileSize*10).distortion(5);
 
 var mouse_down_init_position;
 
@@ -71,8 +71,8 @@ function init() {
     if (collection[i]['embedding_y'] > maxY) maxY = collection[i]['embedding_y'];
     if (collection[i]['embedding_y'] < minY) minY = collection[i]['embedding_y'];
   }
-  collectionWidth = 3*(maxX-minX);
-  collectionHeight = 3*(maxY-minY);
+  collectionWidth = (maxX-minX);
+  collectionHeight = (maxY-minY);
 
   // calculate needed fov to fit all works in view
   var fov = calcNeededFov(collectionWidth, collectionHeight);
@@ -96,8 +96,8 @@ function init() {
 
     var plane = new THREE.PlaneGeometry( collection[i]['draw_width'], collection[i]['draw_height'] );
     var planeMesh = new THREE.Mesh(plane);
-    planeMesh.position.x = 3*collection[i]['embedding_x'];
-    planeMesh.position.y = 3*collection[i]['embedding_y'];
+    planeMesh.position.x = collection[i]['embedding_x'];
+    planeMesh.position.y = collection[i]['embedding_y'];
     planeMesh.position.z = z_scaler+i*0.00001;
     planeMesh.updateMatrix();
     singleGeometry.merge(planeMesh.geometry, planeMesh.matrix);
@@ -181,10 +181,10 @@ function init() {
   controls.panSpeed = 0.5;
   controls.staticMoving = true;
   controls.enabled = false;
-  controls.maxPanX = 3*maxX;
-  controls.minPanX = 3*minX;
-  controls.maxPanY = 3*maxY;
-  controls.minPanY = 3*minY;
+  controls.maxPanX = maxX;
+  controls.minPanX = minX;
+  controls.maxPanY = maxY;
+  controls.minPanY = minY;
 
   //
 
@@ -272,8 +272,8 @@ function recalculateFishEye(coords, unproject) {
   fisheye.focus([coords.x,coords.y]);
   
   for (var i = 0;i < collection.length;i++) {
-    var x_coords = 3*collection[i]['embedding_x'];
-    var y_coords = 3*collection[i]['embedding_y'];
+    var x_coords = collection[i]['embedding_x'];
+    var y_coords = collection[i]['embedding_y'];
     var fisheye_trans = fisheye({x: x_coords, y: y_coords}, fisheyeFactor);
 
     var x_size = collection[i]['draw_width']/2
@@ -339,7 +339,7 @@ function onTouchEnd( event ) {
       .to({x : 0}, 2000)
       .onUpdate(function() {
         fisheyeFactor = this.x;
-        recalculateFishEye({x : 3*workCoords[0], y : 3*workCoords[1]}, false);
+        recalculateFishEye({x : workCoords[0], y : workCoords[1]}, false);
       })
     tween.easing(TWEEN.Easing.Exponential.InOut);
     tween.start();*/
@@ -362,12 +362,14 @@ function animate() {
 
   if (autoPanVec != -1 && !controls.ismousedown) {
     var temp = autoPanVec.clone();
+    temp.x /= 3;
+    temp.y /= 3;
     var new_x = controls.target.x + autoPanVec.x;
     var new_y = controls.target.y + autoPanVec.y;
-    if (autoPanVec.x < 0 && new_x < 3*minX) temp.x = 0;
-    if (autoPanVec.x > 0 && new_x > 3*maxX) temp.x = 0;
-    if (autoPanVec.y < 0 && new_y < 3*minY) temp.y = 0;
-    if (autoPanVec.y > 0 && new_y > 3*maxY) temp.y = 0;
+    if (autoPanVec.x < 0 && new_x < minX) temp.x = 0;
+    if (autoPanVec.x > 0 && new_x > maxX) temp.x = 0;
+    if (autoPanVec.y < 0 && new_y < minY) temp.y = 0;
+    if (autoPanVec.y > 0 && new_y > maxY) temp.y = 0;
     camera.position.addVectors(camera.position, temp);
     controls.target.addVectors(controls.target, temp);
     var mouse = {
@@ -644,7 +646,7 @@ var autoZoom = function(coords) {
   var tweenVars = camera.position.clone();
   tweenVars.factor = 0;
   var tween = new TWEEN.Tween(tweenVars)
-    .to({x : coords[0]*3, y: coords[1]*3, z : 300, factor : 1}, 2000)
+    .to({x : coords[0], y: coords[1], z : 300, factor : 1}, 2000)
     .onUpdate(function() {
       camera.position.x = this.x;
       camera.position.y = this.y;
@@ -654,7 +656,7 @@ var autoZoom = function(coords) {
       // fade fisheye in
       fisheyeFactor = this.factor;
       // center fisheye on image
-      recalculateFishEye({x : coords[0]*3, y : coords[1]*3}, false);
+      recalculateFishEye({x : coords[0], y : coords[1]}, false);
     })
     .onComplete(function() {
       // select work
