@@ -21,9 +21,9 @@ var pos;
 
 var currentIntersectFace = -1;
 
-var tileSize = 20/3; // initial size of works
+var tileSize;
 
-var fisheye = Fisheye.circular().radius(tileSize*10).distortion(5);
+var fisheye;
 
 var mouse_down_init_position;
 
@@ -73,6 +73,11 @@ function init() {
   }
   collectionWidth = (maxX-minX);
   collectionHeight = (maxY-minY);
+
+  // set tilesize so that images approximately cover entire map
+  tileSize = Math.sqrt( Math.PI*Math.pow((collectionWidth+collectionHeight)/4,2) / numberWorks );
+
+  fisheye = Fisheye.circular().radius(tileSize*10).distortion(5);
 
   // calculate needed fov to fit all works in view
   var fov = calcNeededFov(collectionWidth, collectionHeight);
