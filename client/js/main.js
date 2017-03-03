@@ -55,6 +55,8 @@ var dataPath;
 var minX = minY = Infinity;
 var maxX = maxY = -Infinity;
 
+var minTouchDist, minFisheyeDist;
+
 function init() {
 
   container = document.getElementById( 'container' );
@@ -81,6 +83,13 @@ function init() {
 
   // calculate needed fov to fit all works in view
   var fov = calcNeededFov(collectionWidth, collectionHeight);
+
+  // calculate maximum zoom
+  var aspect = window.innerWidth / window.innerHeight;
+  var perspectiveScale = tileSize / Math.tan( 0.5*fov*Math.PI/180 );
+  perspectiveScale = aspect > 1 ? perspectiveScale : (perspectiveScale/aspect);
+  minTouchDist = 20 + 0.564 * perspectiveScale;
+  minFisheyeDist = 80 + 2.336 * perspectiveScale;
 
   //
 
@@ -179,7 +188,7 @@ function init() {
   container.appendChild( renderer.domElement );
 
   controls = new TrackballControls( camera, renderer.domElement );
-  controls.minDistance = 225;
+  controls.minDistance =  minFisheyeDist;
   controls.maxDistance = 2200;
   controls.noRotate = true;
   controls.noMouseZoom = true;
@@ -280,10 +289,9 @@ function recalculateFishEye(coords, unproject) {
     var x_coords = collection[i]['embedding_x'];
     var y_coords = collection[i]['embedding_y'];
     var fisheye_trans = fisheye({x: x_coords, y: y_coords}, fisheyeFactor);
-
+    
     var x_size = collection[i]['draw_width']/2
     var y_size = collection[i]['draw_height']/2
-
     var x_offset = x_size+((fisheye_trans.z-1)*0.7*x_size);
     var y_offset = y_size+((fisheye_trans.z-1)*0.7*y_size);
     var x_pos = fisheye_trans.x;
@@ -312,7 +320,7 @@ function autoPan(mouse) {
 
 function onTouchStart( event ) {
   isTouch = true;
-  controls.minDistance = 55;
+  controls.minDistance = minTouchDist;
 }
 
 function onTouchMove( event ) {
