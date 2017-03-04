@@ -93,7 +93,7 @@ function init() {
 
   //
 
-  camera = new THREE.PerspectiveCamera( fov, window.innerWidth / window.innerHeight, 1, 3500 );
+  camera = new THREE.PerspectiveCamera( fov, window.innerWidth / window.innerHeight, 10, 3500 );
   camera.position.z = 2000;
 
   scene = new THREE.Scene();
@@ -112,7 +112,7 @@ function init() {
     var planeMesh = new THREE.Mesh(plane);
     planeMesh.position.x = collection[i]['embedding_x'];
     planeMesh.position.y = collection[i]['embedding_y'];
-    planeMesh.position.z = z_scaler+i*0.00001;
+    planeMesh.position.z = z_scaler+i*0.0001;
     planeMesh.updateMatrix();
     singleGeometry.merge(planeMesh.geometry, planeMesh.matrix);
   }
@@ -296,7 +296,7 @@ function recalculateFishEye(coords, unproject) {
     var y_offset = y_size+((fisheye_trans.z-1)*0.7*y_size);
     var x_pos = fisheye_trans.x;
     var y_pos = fisheye_trans.y;
-    var z_pos = fisheye_trans.z*z_scaler + i*0.00001;
+    var z_pos = fisheye_trans.z*z_scaler + i*0.0001;
     singleGeometry.attributes.position.setXYZ((i*6)  , x_pos-x_offset, y_pos+y_offset, z_pos);
     singleGeometry.attributes.position.setXYZ((i*6)+1, x_pos-x_offset, y_pos-y_offset, z_pos);
     singleGeometry.attributes.position.setXYZ((i*6)+2, x_pos+x_offset, y_pos+y_offset, z_pos);
