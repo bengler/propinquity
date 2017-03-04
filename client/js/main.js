@@ -105,8 +105,8 @@ function init() {
   for (var i = 0;i < numberWorks;i++) {
     var area = collection[i]['image_width']*collection[i]['image_height'];
     var scaling = tileSize / Math.sqrt(area);
-    collection[i]['draw_width'] = Math.round(collection[i]['image_width']*scaling);
-    collection[i]['draw_height'] = Math.round(collection[i]['image_height']*scaling);
+    collection[i]['draw_width'] = collection[i]['image_width']*scaling;
+    collection[i]['draw_height'] = collection[i]['image_height']*scaling;
 
     var plane = new THREE.PlaneGeometry( collection[i]['draw_width'], collection[i]['draw_height'] );
     var planeMesh = new THREE.Mesh(plane);
