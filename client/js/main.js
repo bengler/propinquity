@@ -144,7 +144,7 @@ function init() {
 
       materials[i] = new THREE.MeshBasicMaterial({ map : textures[i], overdraw : true });
     }
-    materials[numTextures] = new THREE.MeshBasicMaterial({ overdraw : true });
+    materials[numTextures] = new THREE.MeshBasicMaterial({ overdraw : true, depthTest : false });
     var multimaterial = new THREE.MultiMaterial(materials);
     singleGeometry = new THREE.BufferGeometry().fromGeometry(singleGeometry);
 
