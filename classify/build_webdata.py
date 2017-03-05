@@ -5,6 +5,8 @@ from PIL.Image import LANCZOS
 import re
 import math
 import logging
+import subprocess
+from subprocess import CalledProcessError
 
 logger = logging.getLogger('propinquity')
 
@@ -86,15 +88,19 @@ def build_web_files(options):
 		startIndex = maxTiles * mosaic_index
 		endIndex = min(maxTiles * (mosaic_index+1), numWorks)
 
-		if len(output_json) < (maxTiles * (mosaic_index+1)):
-			num_tiles = numWorks % maxTiles
-			mosaic_height = (num_tiles / maxTileDim) + 1
-			mosaic_width = maxTileDim if num_tiles > maxTileDim else num_tiles
+		if endIndex == numWorks:
+			# find suitable Power-of-Two dimensions
+			num_tiles = endIndex-startIndex
+			mosaic_width = int(math.ceil(math.sqrt(num_tiles)))
+			PoT_dim = int(math.pow(2, math.ceil(math.log(mosaic_width*TILESIZE,2))))
 		else:
 			num_tiles = maxTiles
-			mosaic_height, mosaic_width = maxTileDim, maxTileDim
+			mosaic_width = maxTileDim
+			PoT_dim = 4096
 
-		mosaic = Image.new("RGB",(mosaic_width*TILESIZE,mosaic_height*TILESIZE))
+		mosaic_images = {}
+
+		mosaic = Image.new("RGB",(PoT_dim,PoT_dim))
 		for i in range(startIndex, endIndex):
 			filename = "data/%s/images/%s.jpg" % (process ,str(output_json[i]['sequence_id']).zfill(4))
 			try:
@@ -104,20 +110,48 @@ def build_web_files(options):
 				logger.warning("image %s could not be loaded" % filename)
 				continue
 
-			left = ((i - startIndex) % maxTileDim)*TILESIZE
-			top = ((i - startIndex) / maxTileDim)*TILESIZE
+			left = ((i - startIndex) % mosaic_width)*TILESIZE
+			top = ((i - startIndex) / mosaic_width)*TILESIZE
 			mosaic.paste(I,(left, top, left + TILESIZE, top + TILESIZE))
+
 		mosaic_filename = "data/%s/%s_mosaic_%d.jpg" % (process, process, mosaic_index)
-		mosaic.save(mosaic_filename)
+		mosaic.save(mosaic_filename, format="jpeg", optimize=True)
+		mosaic_images['jpg'] = "%s_mosaic_%d.jpg" % (process, mosaic_index)
+
+		mosaic_lg_filename = "data/%s/%s_mosaic_%d.png" % (process, process, mosaic_index)
+		mosaic.save(mosaic_lg_filename, format="png")
+		mosaic_lg_abspath = os.path.abspath(mosaic_lg_filename)
+
+		# create s3tc version
+		logger.info("Creating s3tc compressed texture ... ")
+		try:
+			subprocess.check_call(
+				["nvcompress", "-bc1", "-nomips", mosaic_lg_abspath, mosaic_lg_abspath[0:-4]+".dds"],
+				shell=True, stderr=subprocess.STDOUT, stdout=subprocess.STDOUT)
+		except CalledProcessError as err:
+			logger.warning("Failed to create s3tc compressed texture for mosaic %d, process '%s', output was : %s" % (mosaic_index, process, err.output))
+		else:
+			mosaic_images['s3tc'] = "%s_mosaic_%d.dds" % (process, mosaic_index)
+
+		# create pvrtc version
+		logger.info("Creating pvrtc compressed texture ... ")
+		try:
+			subprocess.check_call(
+				["PVRTexToolCLI", "-i", mosaic_lg_abspath, "-f", "PVRTC1_2", "-o", mosaic_lg_abspath[0:-4]+".pvr"],
+				shell=True, stderr=subprocess.STDOUT, stdout=subprocess.STDOUT)
+		except CalledProcessError as err:
+			logger.warning("Failed to create pvrtc compressed texture for mosaic %d, process '%s', output was : %s" % (mosaic_index, process, err.output))
+		else:
+			mosaic_images['pvrtc'] = "%s_mosaic_%d.pvr" % (process, mosaic_index)
+
+		os.remove(mosaic_lg_filename)
 
 		mosaics.append({
-			"image" : mosaic_filename.split("/")[-1],
+			"image" : mosaic_images,
 			"mosaicWidth" : mosaic_width,
-			"mosaicHeight" : mosaic_height,
 			"tileSize" : TILESIZE,
 			"tiles" : num_tiles,
-			"width" : mosaic_width*TILESIZE,
-			"height" : mosaic_height*TILESIZE
+			"pixelWidth" : PoT_dim
 		})
 	mosaics_json = json.dumps(mosaics, indent=2)
 	of.write("var mosaics = "+mosaics_json+";\n")
@@ -144,11 +178,9 @@ def build_web_files(options):
 	canvas_mosaics_json = json.dumps([{
 		"image" : canvas_mosaic_filename.split("/")[-1],
 		"mosaicWidth" : canvas_dims,
-		"mosaicHeight" : canvas_dims,
 		"tileSize" : canvas_tilesize,
 		"tiles" : numWorks,
-		"width" : canvas_size,
-		"height" : canvas_size
+		"pixelWidth" : canvas_size
 	}], indent=2)
 	of.write("var canvas_mosaics = "+canvas_mosaics_json+";\n")
 	

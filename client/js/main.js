@@ -159,15 +159,13 @@ function init() {
     for (var i = 0;i < numTextures;i++) {
       // set up mapping from textures to geometry
       var mw = mosaics[i].mosaicWidth;
-      var mh = mosaics[i].mosaicHeight;
       var tSize = mosaics[i].tileSize;
-      var pW = mosaics[i].width;
-      var pH = mosaics[i].height;
+      var pDim = mosaics[i].pixelWidth;
       for (var j = 0;j < mosaics[i].tiles;j++) {
-        var left = ((j % mw)*tSize)/pW;
-        var upper = (Math.floor(j / mw)*tSize)/pH;
-        var right = left + tSize/pW;
-        var lower = upper + tSize/pH;
+        var left = ((j % mw)*tSize)/pDim;
+        var upper = (Math.floor(j / mw)*tSize)/pDim;
+        var right = left + tSize/pDim;
+        var lower = upper + tSize/pDim;
         var coords = [
           new THREE.Vector2(left,upper),
           new THREE.Vector2(left,lower),
@@ -596,15 +594,13 @@ function removeHighResImage(index) {
   var mosaicIndex = Math.floor(index / mosaics[0].tiles);
   var i = index % mosaics[0].tiles;
   var mw = mosaics[mosaicIndex].mosaicWidth;
-  var mh = mosaics[mosaicIndex].mosaicHeight;
   var tSize = mosaics[mosaicIndex].tileSize;
-  var pW = mosaics[mosaicIndex].width;
-  var pH = mosaics[mosaicIndex].height;
+  var pDim = mosaics[mosaicIndex].pixelWidth;
 
-  var left = ((i % mw)*tSize)/pW;
-  var upper = (Math.floor(i / mw)*tSize)/pH;
-  var right = left + tSize/pW;
-  var lower = upper + tSize/pH;
+  var left = ((i % mw)*tSize)/pDim;
+  var upper = (Math.floor(i / mw)*tSize)/pDim;
+  var right = left + tSize/pDim;
+  var lower = upper + tSize/pDim;
 
   mesh.geometry.clearGroups();
   var mosaicStart = 0
