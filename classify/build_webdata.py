@@ -7,6 +7,7 @@ import math
 import logging
 import subprocess
 from subprocess import CalledProcessError
+import os
 
 logger = logging.getLogger('propinquity')
 
@@ -126,8 +127,8 @@ def build_web_files(options):
 		logger.info("Creating s3tc compressed texture ... ")
 		try:
 			subprocess.check_call(
-				["nvcompress", "-bc1", "-nomips", mosaic_lg_abspath, mosaic_lg_abspath[0:-4]+".dds"],
-				shell=True, stderr=subprocess.STDOUT, stdout=subprocess.STDOUT)
+				"nvcompress -bc1 -nomips "+mosaic_lg_abspath+" "+mosaic_lg_abspath[0:-4]+".dds",
+				shell=True)
 		except CalledProcessError as err:
 			logger.warning("Failed to create s3tc compressed texture for mosaic %d, process '%s', output was : %s" % (mosaic_index, process, err.output))
 		else:
@@ -137,8 +138,8 @@ def build_web_files(options):
 		logger.info("Creating pvrtc compressed texture ... ")
 		try:
 			subprocess.check_call(
-				["PVRTexToolCLI", "-i", mosaic_lg_abspath, "-f", "PVRTC1_2", "-o", mosaic_lg_abspath[0:-4]+".pvr"],
-				shell=True, stderr=subprocess.STDOUT, stdout=subprocess.STDOUT)
+				"./PVRTexToolCLI -i "+mosaic_lg_abspath+" -f PVRTC1_2_RGB -o "+mosaic_lg_abspath[0:-4]+".pvr"],
+				shell=True)
 		except CalledProcessError as err:
 			logger.warning("Failed to create pvrtc compressed texture for mosaic %d, process '%s', output was : %s" % (mosaic_index, process, err.output))
 		else:
