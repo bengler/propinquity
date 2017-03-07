@@ -213,8 +213,8 @@ function init() {
 }
 
 function onWebGLMouseDown( event ) {
-  var x = ( event.clientX / window.innerWidth ) * 2 - 1;
-  var y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+  mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+  mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
   mouse_down_init_position = [mouse.x, mouse.y];
 }
 
@@ -255,8 +255,10 @@ function onDocumentMouseMove( event ) {
   isTouch = false;
 
   // Don't update when panning
-  if (controls.ismousedown) return;
-
+  if (controls.ismousedown) {
+    autoPanVec = -1;
+    return;
+  }
 
   mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
   mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
