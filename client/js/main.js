@@ -57,6 +57,8 @@ var maxX = maxY = -Infinity;
 
 var minTouchDist, minFisheyeDist;
 
+var maxFisheyeZ;
+
 function init() {
 
   container = document.getElementById( 'container' );
@@ -79,7 +81,13 @@ function init() {
   // set tilesize so that images approximately cover entire map
   tileSize = Math.sqrt( Math.PI*Math.pow((collectionWidth+collectionHeight)/4,2) / numberWorks );
 
-  fisheye = Fisheye.circular().radius(tileSize*10).distortion(5);
+  var feD = 5;
+  var feR = tileSize*10;
+  fisheye = Fisheye.circular().radius(feR).distortion(feD);
+  
+  // calculate the maximum z-height of works distorted by fisheye
+  var k0 = Math.exp(feD) / (Math.exp(feD) - 1) * feR;
+  maxFisheyeZ = (k0 * (1 - Math.exp(-0.001 * feD/feR)) / 0.001 * .75 + .25) * z_scaler;
 
   // calculate needed fov to fit all works in view
   var fov = calcNeededFov(collectionWidth, collectionHeight);
@@ -88,8 +96,8 @@ function init() {
   var aspect = window.innerWidth / window.innerHeight;
   var perspectiveScale = tileSize / Math.tan( 0.5*fov*Math.PI/180 );
   perspectiveScale = aspect > 1 ? perspectiveScale : (perspectiveScale/aspect);
-  minTouchDist = 20 + 0.564 * perspectiveScale;
-  minFisheyeDist = 80 + 2.336 * perspectiveScale;
+  minTouchDist = z_scaler + 0.564 * perspectiveScale;
+  minFisheyeDist = maxFisheyeZ + 2.336 * perspectiveScale;
 
   //
 
@@ -280,7 +288,7 @@ function recalculateFishEye(coords, unproject) {
 
     var dir = vector.sub( camera.position ).normalize();
 
-    var distance = - camera.position.z / dir.z;
+    var distance = (maxFisheyeZ - camera.position.z) / dir.z;
 
     coords = camera.position.clone().add( dir.multiplyScalar( distance ) );
   }
