@@ -53,6 +53,7 @@ module.exports = TrackballControls = function ( object, domElement ) {
 
 	this.maxPanX = Infinity;
 	this.maxPanY = Infinity;
+	this.unprojectZ = 1;
 
 	// internals
 
@@ -269,13 +270,13 @@ module.exports = TrackballControls = function ( object, domElement ) {
 				var vector_1 = new THREE.Vector3((_panEnd.x*2)-1, (_panEnd.y*2)-1, 0.5);
 				vector_1.unproject( _this.object );
 				var dir_1 = vector_1.sub( _this.object.position ).normalize();
-				var distance_1 = (20-_this.object.position.z) / dir_1.z;
+				var distance_1 = (this.unprojectZ-_this.object.position.z) / dir_1.z;
 				var pe = dir_1.multiplyScalar( distance_1 );
 
 				var vector_2 = new THREE.Vector3((_panStart.x*2)-1, (_panStart.y*2)-1, 0.5);
 				vector_2.unproject( _this.object );
 				var dir_2 = vector_2.sub( _this.object.position ).normalize();
-				var distance_2 = (20-_this.object.position.z) / dir_2.z;
+				var distance_2 = (this.unprojectZ-_this.object.position.z) / dir_2.z;
 				var ps = dir_2.multiplyScalar( distance_2 );
 
 				var diff = pe.sub(ps);

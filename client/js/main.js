@@ -196,7 +196,7 @@ function init() {
   container.appendChild( renderer.domElement );
 
   controls = new TrackballControls( camera, renderer.domElement );
-  controls.minDistance =  minFisheyeDist;
+  controls.minDistance = minTouchDist;
   controls.maxDistance = 2200;
   controls.noRotate = true;
   controls.noMouseZoom = true;
@@ -207,6 +207,7 @@ function init() {
   controls.minPanX = minX;
   controls.maxPanY = maxY;
   controls.minPanY = minY;
+  controls.unprojectZ = z_scaler;
 
   //
 
@@ -261,6 +262,8 @@ function onDocumentMouseMove( event ) {
   if (autoZoomed) return;
 
   isTouch = false;
+  controls.unprojectZ = maxFisheyeZ;
+  controls.minDistance =  minFisheyeDist;
 
   // Don't update when panning
   if (controls.ismousedown) {
@@ -331,6 +334,7 @@ function autoPan(mouse) {
 function onTouchStart( event ) {
   isTouch = true;
   controls.minDistance = minTouchDist;
+  controls.unprojectZ = z_scaler;
 }
 
 function onTouchMove( event ) {
