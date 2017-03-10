@@ -255,7 +255,7 @@ THREE.Projector = function () {
 
 		}
 
-		function pushTriangle( a, b, c ) {
+		function pushTriangle( a, b, c, materialIndex ) {
 
 			var v1 = _vertexPool[ a ];
 			var v2 = _vertexPool[ b ];
@@ -292,7 +292,11 @@ THREE.Projector = function () {
 
 				_face.vertexNormalsLength = 3;
 
-				_face.material = object.material;
+				if (materialIndex !== undefined) {
+					_face.material = object.material.materials[materialIndex];
+				} else {
+					_face.material = object.material;
+				}
 
 				_renderData.elements.push( _face );
 
@@ -468,9 +472,27 @@ THREE.Projector = function () {
 
 					} else {
 
-						for ( var i = 0, l = positions.length / 3; i < l; i += 3 ) {
+						if ( groups.length > 0 ) {
 
-							renderList.pushTriangle( i, i + 1, i + 2 );
+							for ( var g = 0; g < groups.length; g ++ ) {
+
+								var group = groups[ g ];
+
+								for ( var i = group.start, l = group.start + group.count; i < l; i += 3 ) {
+
+									renderList.pushTriangle( i , i + 1 , i + 2 , group.materialIndex );
+
+								}
+
+							}
+
+						} else {
+
+							for ( var i = 0, l = positions.length / 3; i < l; i += 3 ) {
+
+								renderList.pushTriangle( i, i + 1, i + 2 );
+
+							}
 
 						}
 
