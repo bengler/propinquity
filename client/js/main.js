@@ -1,5 +1,3 @@
-// Canvas enabled THREE
-var THREE = require("three-canvas-renderer");
 var TWEEN = require("tween.js")
 
 var TrackballControls = require('./three-trackballcontrols');
