@@ -261,9 +261,11 @@ function onDocumentMouseMove( event ) {
   event.preventDefault();
   if (autoZoomed) return;
 
-  isTouch = false;
-  controls.unprojectZ = maxFisheyeZ;
-  controls.minDistance =  minFisheyeDist;
+  if (isTouch) {
+    isTouch = false;
+    controls.unprojectZ = maxFisheyeZ;
+    controls.minDistance =  minFisheyeDist;
+  }
 
   // Don't update when panning
   if (controls.ismousedown) {
@@ -332,9 +334,11 @@ function autoPan(mouse) {
 }
 
 function onTouchStart( event ) {
-  isTouch = true;
-  controls.minDistance = minTouchDist;
-  controls.unprojectZ = z_scaler;
+  if (!isTouch) {
+    isTouch = true;
+    controls.minDistance = minTouchDist;
+    controls.unprojectZ = z_scaler;
+  }
 }
 
 function onTouchMove( event ) {
