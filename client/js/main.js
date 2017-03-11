@@ -61,6 +61,19 @@ function init() {
 
   container = document.getElementById( 'container' );
 
+  if ( Detector.webgl ) {
+  //if ( false ) {
+    renderer = new THREE.WebGLRenderer( { antialias: false, alpha : true, logarithmicDepthBuffer: true  } );
+  } else {
+    renderer = new THREE.CanvasRenderer( { antialias: false, alpha : true } );
+    mosaics = canvas_mosaics;
+  }
+  renderer.setClearColor( 0x333333 );
+  renderer.setPixelRatio( window.devicePixelRatio );
+  renderer.setSize( window.innerWidth, window.innerHeight );
+
+  container.appendChild( renderer.domElement );
+
   // 
 
   for (var i = 0;i < mosaics.length;i++) {
@@ -130,11 +143,14 @@ function init() {
       // set up mapping from textures to geometry
       var mw = mosaics[i].mosaicWidth;
       var mh = mosaics[i].mosaicHeight;
+      var tSize = mosaics[i].tileSize;
+      var pW = mosaics[i].width;
+      var pH = mosaics[i].height;
       for (var j = 0;j < mosaics[i].tiles;j++) {
-        var left = (j % mw)/mw;
-        var upper = Math.floor(j / mw)/mh;
-        var right = left + 1/mw;
-        var lower = upper + 1/mh;
+        var left = ((j % mw)*tSize)/pW;
+        var upper = (Math.floor(j / mw)*tSize)/pH;
+        var right = left + tSize/pW;
+        var lower = upper + tSize/pH;
         var coords = [
           new THREE.Vector2(left,1-upper),
           new THREE.Vector2(left,1-lower),
@@ -183,15 +199,6 @@ function init() {
   mouse = new THREE.Vector2();
 
   //
-  if ( Detector.webgl ) {
-    renderer = new THREE.WebGLRenderer( { antialias: false, alpha : true, logarithmicDepthBuffer: true  } );
-  } else {
-    renderer = new THREE.CanvasRenderer( { antialias: false, alpha : true } );
-  }
-  renderer.setClearColor( 0x333333 );
-  renderer.setPixelRatio( window.devicePixelRatio );
-  renderer.setSize( window.innerWidth, window.innerHeight );
-  container.appendChild( renderer.domElement );
 
   controls = new TrackballControls( camera, renderer.domElement );
   controls.minDistance = minTouchDist;
@@ -572,11 +579,14 @@ function removeHighResImage(index) {
   var i = index % mosaics[0].tiles;
   var mw = mosaics[mosaicIndex].mosaicWidth;
   var mh = mosaics[mosaicIndex].mosaicHeight;
+  var tSize = mosaics[mosaicIndex].tileSize;
+  var pW = mosaics[mosaicIndex].width;
+  var pH = mosaics[mosaicIndex].height;
 
-  var left = (i % mw)/mw;
-  var upper = Math.floor(i / mw)/mh;
-  var right = left + 1/mw;
-  var lower = upper + 1/mh;
+  var left = ((i % mw)*tSize)/pW;
+  var upper = (Math.floor(i / mw)*tSize)/pH;
+  var right = left + tSize/pW;
+  var lower = upper + tSize/pH;
 
   mesh.geometry.clearGroups();
   var mosaicStart = 0

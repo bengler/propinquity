@@ -116,8 +116,40 @@ def build_web_files(options):
 			"mosaicHeight" : mosaic_height,
 			"tileSize" : TILESIZE,
 			"tiles" : num_tiles,
+			"width" : mosaic_width*TILESIZE,
+			"height" : mosaic_height*TILESIZE
 		})
 	mosaics_json = json.dumps(mosaics, indent=2)
 	of.write("var mosaics = "+mosaics_json+";\n")
+
+	# canvas mosaic
+	canvas_size = 4096
+	canvas_dims = int(math.ceil(math.sqrt(numWorks)))
+	canvas_tilesize = canvas_size / canvas_dims
+	canvas_mosaic = Image.new("RGB",(canvas_size, canvas_size))
+	for i in range(numWorks):
+		filename = "data/%s/images/%s.jpg" % (process ,str(output_json[i]['sequence_id']).zfill(4))
+		try:
+			I = Image.open(filename)
+			I = I.resize((canvas_tilesize, canvas_tilesize),resample=LANCZOS)
+		except:
+			logger.warning("image %s could not be loaded" % filename)
+			continue
+
+		left = (i % canvas_dims)*canvas_tilesize
+		top = (i / canvas_dims)*canvas_tilesize
+		canvas_mosaic.paste(I,(left, top, left + canvas_tilesize, top + canvas_tilesize))
+	canvas_mosaic_filename = "data/%s/%s_canvas_mosaic.jpg" % (process, process)
+	canvas_mosaic.save(canvas_mosaic_filename)
+	canvas_mosaics_json = json.dumps([{
+		"image" : canvas_mosaic_filename.split("/")[-1],
+		"mosaicWidth" : canvas_dims,
+		"mosaicHeight" : canvas_dims,
+		"tileSize" : canvas_tilesize,
+		"tiles" : numWorks,
+		"width" : canvas_size,
+		"height" : canvas_size
+	}], indent=2)
+	of.write("var canvas_mosaics = "+canvas_mosaics_json+";\n")
 	
 	of.close()
