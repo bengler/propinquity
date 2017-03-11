@@ -1,8 +1,5 @@
 var TWEEN = require("tween.js")
 
-require("imports-loader?THREE=three!./DDSLoader");
-require("imports-loader?THREE=three!./PVRLoader");
-
 var TrackballControls = require('./three-trackballcontrols');
 
 var Fisheye = require('./Fisheye')
