@@ -138,7 +138,7 @@ def build_web_files(options):
 		logger.info("Creating pvrtc compressed texture ... ")
 		try:
 			subprocess.check_call(
-				"./PVRTexToolCLI -i "+mosaic_lg_abspath+" -f PVRTC1_4_RGB -q pvrtcbest -o "+mosaic_lg_abspath[0:-4]+".pvr"],
+				"./PVRTexToolCLI -i "+mosaic_lg_abspath+" -f PVRTC1_4_RGB -q pvrtcbest -o "+mosaic_lg_abspath[0:-4]+".pvr",
 				shell=True)
 		except CalledProcessError as err:
 			logger.warning("Failed to create pvrtc compressed texture for mosaic %d, process '%s', output was : %s" % (mosaic_index, process, err.output))
