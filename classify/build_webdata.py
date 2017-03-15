@@ -177,7 +177,9 @@ def build_web_files(options):
 	canvas_mosaic_filename = "data/%s/%s_canvas_mosaic.jpg" % (process, process)
 	canvas_mosaic.save(canvas_mosaic_filename)
 	canvas_mosaics_json = json.dumps([{
-		"image" : canvas_mosaic_filename.split("/")[-1],
+		"image" : {
+			"jpg" : canvas_mosaic_filename.split("/")[-1]
+		},
 		"mosaicWidth" : canvas_dims,
 		"tileSize" : canvas_tilesize,
 		"tiles" : numWorks,
