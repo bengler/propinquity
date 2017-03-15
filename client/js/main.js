@@ -62,7 +62,7 @@ var textureFormat;
 var textureLoaders = {
   's3tc' : THREE.DDSLoader,
   'pvrtc' : THREE.PVRLoader,
-  'etc1' : THREE.PVRLoader,
+  //'etc1' : THREE.DDSLoader,
   'jpg' : THREE.TextureLoader
 }
 
@@ -75,7 +75,7 @@ function init() {
     var availableExtensions = renderer.context.getSupportedExtensions();
     if (availableExtensions.indexOf("WEBGL_compressed_texture_s3tc") > -1) textureFormat = "s3tc";
     else if (availableExtensions.indexOf("WEBGL_compressed_texture_pvrtc") > -1 || availableExtensions.indexOf("WEBKIT_WEBGL_compressed_texture_pvrtc") > -1) textureFormat = "pvrtc";
-    else if (availableExtensions.indexOf("WEBGL_compressed_texture_etc1") > -1) textureFormat = "etc1";
+    //else if (availableExtensions.indexOf("WEBGL_compressed_texture_etc1") > -1) textureFormat = "etc1";
     else textureFormat = "jpg";
   } else {
     renderer = new THREE.CanvasRenderer( { antialias: false, alpha : true } );
