@@ -59,6 +59,8 @@ var maxFisheyeZ;
 
 var textureFormat;
 
+var isCanvas = false;
+
 var textureLoaders = {
   's3tc' : THREE.DDSLoader,
   'pvrtc' : THREE.PVRLoader,
@@ -80,6 +82,7 @@ function init() {
   } else {
     renderer = new THREE.CanvasRenderer( { antialias: false, alpha : true } );
     textureFormat = "jpg";
+    isCanvas = true;
     mosaics = canvas_mosaics;
   }
   renderer.setClearColor( 0x333333 );
@@ -167,6 +170,10 @@ function init() {
         var upper = (Math.floor(j / mw)*tSize)/pDim;
         var right = left + tSize/pDim;
         var lower = upper + tSize/pDim;
+        if (isCanvas) {
+          upper = 1-upper;
+          lower = 1-lower;
+        }
         var coords = [
           new THREE.Vector2(left,upper),
           new THREE.Vector2(left,lower),
@@ -602,6 +609,10 @@ function removeHighResImage(index) {
   var upper = (Math.floor(i / mw)*tSize)/pDim;
   var right = left + tSize/pDim;
   var lower = upper + tSize/pDim;
+  if (isCanvas) {
+    upper = 1-upper;
+    lower = 1-lower;
+  }
 
   mesh.geometry.clearGroups();
   var mosaicStart = 0
