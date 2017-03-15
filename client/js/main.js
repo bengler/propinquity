@@ -94,14 +94,18 @@ function init() {
     numberWorks += mosaics[i]["tiles"];
   }
 
-  for (var i = 0;i < numberWorks;i++) {
-    if (collection[i]['embedding_x'] > maxX) maxX = collection[i]['embedding_x'];
-    if (collection[i]['embedding_x'] < minX) minX = collection[i]['embedding_x'];
-    if (collection[i]['embedding_y'] > maxY) maxY = collection[i]['embedding_y'];
-    if (collection[i]['embedding_y'] < minY) minY = collection[i]['embedding_y'];
-  }
-  collectionWidth = (maxX-minX);
-  collectionHeight = (maxY-minY);
+  var xCoords = collection.map(function(e){return e.embedding_x});
+  var yCoords = collection.map(function(e){return e.embedding_y});
+  xCoords.sort(function (a,b) {return a-b;});
+  yCoords.sort(function (a,b) {return a-b;});
+  var lowPercentile = Math.floor(numberWorks*0.01);
+  var hiPercentile = Math.floor(numberWorks*0.99);
+  collectionWidth = (xCoords[hiPercentile]-xCoords[lowPercentile])*1.1;
+  collectionHeight = (yCoords[hiPercentile]-yCoords[lowPercentile])*1.1;
+  maxX = xCoords[numberWorks-1];
+  minX = xCoords[0];
+  maxY = yCoords[numberWorks-1];
+  minY = yCoords[0];
 
   // set tilesize so that images approximately cover entire map
   tileSize = Math.sqrt( Math.PI*Math.pow((collectionWidth+collectionHeight)/4,2) / numberWorks );
