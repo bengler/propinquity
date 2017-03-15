@@ -348,7 +348,7 @@ function recalculateFishEye(coords, unproject) {
 function autoPan(mouse) {
 
   var mouseVec = new THREE.Vector3(mouse.x, mouse.y, 0)
-  if (mouseVec.length() > 0.5 && mouseVec.length() < 2) {
+  if (mouseVec.length() > 0.75 && mouseVec.length() < 2) {
     autoPanVec = mouseVec
   } else {
     autoPanVec = -1
