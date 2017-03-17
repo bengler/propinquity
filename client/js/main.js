@@ -265,7 +265,8 @@ function onWebGLMouseUp( event ) {
   var old_y = mouse_down_init_position[1];
   var distance = Math.sqrt((x-old_x)*(x-old_x) + (y-old_y)*(y-old_y));
   if (currentIntersectFace >= 0 && distance < 0.01) {
-    var work_url = "http://samling.nasjonalmuseet.no/no/object/"+collection[currentIntersectFace].identifier
+    var work_id = collection[currentIntersectFace].identifier;
+    var work_url = "http://samling.nasjonalmuseet.no/no/object/"+work_id.replace("&","_");
     window.open(work_url, '_blank');
   }
 }
@@ -384,7 +385,8 @@ function onTouchEnd( event ) {
   if (!touchMove) {
     updateTileInfo();
     if (currentIntersectFace >= 0) {
-      var work_url = "http://samling.nasjonalmuseet.no/no/object/"+collection[currentIntersectFace].identifier
+      var work_id = collection[currentIntersectFace].identifier;
+      var work_url = "http://samling.nasjonalmuseet.no/no/object/"+work_id.replace("&","_");
       if (currentIntersectFace == previousFace && !autoZoomed) {
         window.open(work_url, '_blank');
       }
@@ -412,7 +414,8 @@ function onLinkTouchEnd( event ) {
   event.preventDefault();
   event.stopPropagation();
   if (currentIntersectFace >= 0) {
-    var work_url = "http://samling.nasjonalmuseet.no/no/object/"+collection[currentIntersectFace].identifier
+    var work_id = collection[currentIntersectFace].identifier;
+    var work_url = "http://samling.nasjonalmuseet.no/no/object/"+work_id.replace("&","_");
     window.open(work_url, '_blank');
   }
 }
