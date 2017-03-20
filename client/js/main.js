@@ -515,7 +515,7 @@ function updateTileInfo() {
 
 function render() {
 
-  if (!isTouch || autoZoomed) {
+  if (!isTouch) {
     updateTileInfo();
   }
 
@@ -730,6 +730,7 @@ var autoZoom = function(coords) {
       // select work
       mouse.x = 0;
       mouse.y = 0;
+      updateTileInfo();
     })
   tween.easing(TWEEN.Easing.Exponential.InOut);
   tween.delay(1000);
