@@ -6,7 +6,7 @@ module.exports = {
           k1,
           focus = [0, 0];
 
-      function fisheye(d, ff) {
+      function fisheye(d) {
         var dx = d.x - focus[0],
             dy = d.y - focus[1],
             dd = Math.sqrt(dx * dx + dy * dy);
@@ -14,9 +14,9 @@ module.exports = {
         if (!dd || dd >= radius) return {x: d.x, y: d.y, z: dd >= radius ? 1 : 10};
         var k = k0 * (1 - Math.exp(-dd * k1)) / dd * .75 + .25;
         return {
-          x: (focus[0] + dx * k)*ff + (1-ff)*d.x,
-          y: (focus[1] + dy * k)*ff + (1-ff)*d.y,
-          z: ff*Math.min(k, 10) + (1-ff)
+          x: (focus[0] + dx * k),
+          y: (focus[1] + dy * k),
+          z: Math.min(k, 10)
         };
       }
 

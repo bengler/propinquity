@@ -44,8 +44,6 @@ THREE.ImageUtils.crossOrigin = '';
 
 var z_scaler = 20;
 
-var fisheyeFactor = 1;
-
 var collectionWidth, collectionHeight;
 
 var dataPath;
@@ -60,6 +58,9 @@ var maxFisheyeZ;
 var textureFormat;
 
 var isCanvas = false;
+
+var workMarker, workMarkerPosition;
+var markedWork = -1;
 
 var textureLoaders = {
   's3tc' : THREE.DDSLoader,
@@ -140,6 +141,12 @@ function init() {
 
   //
 
+  // mark work if specified in url
+  if (lookupWork(queryStrings['id']) !== undefined) {
+    markedWork = lookupWork(queryStrings['id']);
+    workMarkerPosition = new THREE.Vector3(collection[markedWork]['embedding_x'],collection[markedWork]['embedding_y'],z_scaler + 2.);
+  }
+
   // create geometry and merge into one geometry
   singleGeometry = new THREE.Geometry();
   for (var i = 0;i < numberWorks;i++) {
@@ -152,7 +159,11 @@ function init() {
     var planeMesh = new THREE.Mesh(plane);
     planeMesh.position.x = collection[i]['embedding_x'];
     planeMesh.position.y = collection[i]['embedding_y'];
-    planeMesh.position.z = z_scaler+i*0.0001;
+    if (markedWork == i) {
+      planeMesh.position.z = z_scaler + 2.1;
+    } else {
+      planeMesh.position.z = z_scaler + i*0.0001;
+    }
     planeMesh.updateMatrix();
     singleGeometry.merge(planeMesh.geometry, planeMesh.matrix);
   }
@@ -189,9 +200,18 @@ function init() {
 
       materials[i] = new THREE.MeshBasicMaterial({ map : textures[i], overdraw : true });
     }
-    materials[numTextures] = new THREE.MeshBasicMaterial({ overdraw : true, depthTest : false });
+    materials[numTextures] = new THREE.MeshBasicMaterial({ overdraw : true });
     var multimaterial = new THREE.MultiMaterial(materials);
     singleGeometry = new THREE.BufferGeometry().fromGeometry(singleGeometry);
+
+    // marker of image
+    if (lookupWork(queryStrings['id']) !== undefined) {
+      var workMarkerMaterial = new THREE.MeshBasicMaterial({ color : 0xffffee, transparent : true, opacity: 0.5 ,overdraw : true });
+      var workMarkerGeom = new THREE.CircleGeometry( 1*Math.sqrt(2*tileSize*tileSize), 32 );
+      workMarker = new THREE.Mesh( workMarkerGeom, workMarkerMaterial );
+      workMarker.position.set(workMarkerPosition.x, workMarkerPosition.y, workMarkerPosition.z);
+      scene.add(workMarker);
+    }
 
     mesh = new THREE.Mesh(singleGeometry, multimaterial);
     scene.add(mesh);
@@ -333,7 +353,7 @@ function recalculateFishEye(coords, unproject) {
   for (var i = 0;i < collection.length;i++) {
     var x_coords = collection[i]['embedding_x'];
     var y_coords = collection[i]['embedding_y'];
-    var fisheye_trans = fisheye({x: x_coords, y: y_coords}, fisheyeFactor);
+    var fisheye_trans = fisheye({x: x_coords, y: y_coords});
     
     var x_size = collection[i]['draw_width']/2
     var y_size = collection[i]['draw_height']/2
@@ -341,7 +361,11 @@ function recalculateFishEye(coords, unproject) {
     var y_offset = y_size+((fisheye_trans.z-1)*0.7*y_size);
     var x_pos = fisheye_trans.x;
     var y_pos = fisheye_trans.y;
-    var z_pos = fisheye_trans.z*z_scaler + i*0.0001;
+    if (markedWork == i) {
+      var z_pos = fisheye_trans.z*z_scaler + 2.1;
+    } else {
+      var z_pos = fisheye_trans.z*z_scaler + i*0.0001;
+    }
     singleGeometry.attributes.position.setXYZ((i*6)  , x_pos-x_offset, y_pos+y_offset, z_pos);
     singleGeometry.attributes.position.setXYZ((i*6)+1, x_pos-x_offset, y_pos-y_offset, z_pos);
     singleGeometry.attributes.position.setXYZ((i*6)+2, x_pos+x_offset, y_pos+y_offset, z_pos);
@@ -350,6 +374,18 @@ function recalculateFishEye(coords, unproject) {
     singleGeometry.attributes.position.setXYZ((i*6)+5, x_pos+x_offset, y_pos+y_offset, z_pos);
   }
   singleGeometry.attributes.position.needsUpdate = true;
+
+  if (markedWork >= 0) {
+    // recalculate position and size of marker
+    var fisheye_trans = fisheye({x : workMarkerPosition.x, y : workMarkerPosition.y});
+    var x_size = tileSize/2;
+    var x_offset = x_size+((fisheye_trans.z-1)*0.7*x_size);
+    workMarker.scale.x = x_offset/x_size;
+    workMarker.scale.y = x_offset/x_size;
+    workMarker.position.x = fisheye_trans.x;
+    workMarker.position.y = fisheye_trans.y;
+    workMarker.position.z = fisheye_trans.z*z_scaler + 2.;
+  }
 }
 
 
@@ -395,18 +431,7 @@ function onTouchEnd( event ) {
         "' target='_blank'><em>"+metadata.title+"</em></a></strong>. "+metadata.yearstring+".</p>";
     }
   }
-  if (autoZoomed) {
-    /*var workCoords = lookupCoordinates(queryStrings['id']);
-    var tween = new TWEEN.Tween({x:1})
-      .to({x : 0}, 2000)
-      .onUpdate(function() {
-        fisheyeFactor = this.x;
-        recalculateFishEye({x : workCoords[0], y : workCoords[1]}, false);
-      })
-    tween.easing(TWEEN.Easing.Exponential.InOut);
-    tween.start();*/
-    autoZoomed = false;
-  }
+  if (autoZoomed) autoZoomed = false;
   touchMove = false;
 }
 
@@ -455,7 +480,6 @@ function animate() {
 function updateTileInfo() {
 
   // check if pointer interacts with tile
-
   raycaster.setFromCamera( mouse, camera );
   var intersects = raycaster.intersectObject( mesh );
 
@@ -474,7 +498,7 @@ function updateTileInfo() {
       if ( isTouch ) {
         // raise selected tile
         for (var i = 0;i < 6;i++) {
-          singleGeometry.attributes.position.setZ((currentIntersectFace*6)+i, singleGeometry.attributes.position.getZ((currentIntersectFace*6)+i) + 1.0);
+          singleGeometry.attributes.position.setZ((currentIntersectFace*6)+i, singleGeometry.attributes.position.getZ((currentIntersectFace*6)+i) + 2.0);
         }
         singleGeometry.attributes.position.needsUpdate = true;
       }
@@ -488,8 +512,8 @@ function updateTileInfo() {
       if ( isTouch ) {
         // lower previous selected tile and raise new selected tile
         for (var i = 0;i < 6;i++) {
-          singleGeometry.attributes.position.setZ((currentIntersectFace*6)+i, singleGeometry.attributes.position.getZ((currentIntersectFace*6)+i) - 1.0);
-          singleGeometry.attributes.position.setZ((face_index*6)+i, singleGeometry.attributes.position.getZ((face_index*6)+i) + 1.0);
+          singleGeometry.attributes.position.setZ((currentIntersectFace*6)+i, singleGeometry.attributes.position.getZ((currentIntersectFace*6)+i) - 2.0);
+          singleGeometry.attributes.position.setZ((face_index*6)+i, singleGeometry.attributes.position.getZ((face_index*6)+i) + 2.0);
         }
         singleGeometry.attributes.position.needsUpdate = true;
       }
@@ -502,7 +526,7 @@ function updateTileInfo() {
     if ( isTouch ) {
       // lower previous selected tile
       for (var i = 0;i < 6;i++) {
-        singleGeometry.attributes.position.setZ((currentIntersectFace*6)+i, singleGeometry.attributes.position.getZ((currentIntersectFace*6)+i) - 1.0);
+        singleGeometry.attributes.position.setZ((currentIntersectFace*6)+i, singleGeometry.attributes.position.getZ((currentIntersectFace*6)+i) - 2.0);
       }
       singleGeometry.attributes.position.needsUpdate = true;
     }
@@ -544,7 +568,8 @@ function render() {
 
     // zoom towards specific work if specified in url
     if (queryStrings['id'] !== undefined) {
-      var workCoords = lookupCoordinates(queryStrings['id']);
+      var workIndex = lookupWork(queryStrings['id']);
+      var workCoords = [collection[workIndex].embedding_x, collection[workIndex].embedding_y];
       if (workCoords !== undefined) {
         autoZoom(workCoords);
         // lock focus until user clicks/touches
@@ -702,10 +727,10 @@ var queryStrings = (function(a) {
   return b;
 })(window.location.search.substr(1).split('&'));
 
-function lookupCoordinates(id) {
+function lookupWork(id) {
   for (var i = 0;i < collection.length;i++) {
     if (collection[i].identifier == id) {
-      return [collection[i].embedding_x, collection[i].embedding_y];
+      return i;
     }
   }
 }
@@ -720,11 +745,6 @@ var autoZoom = function(coords) {
       camera.position.y = this.y;
       camera.position.z = this.z;
       controls.target = new THREE.Vector3(this.x, this.y, 0);
-      // TODO : mark image somehow
-      // fade fisheye in
-      fisheyeFactor = this.factor;
-      // center fisheye on image
-      recalculateFishEye({x : coords[0], y : coords[1]}, false);
     })
     .onComplete(function() {
       // select work
