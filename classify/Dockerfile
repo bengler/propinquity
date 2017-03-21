@@ -28,7 +28,7 @@ RUN pip install \
     requests \
     arrow \
     tensorflow==1.0.1 \
-    Keras==2.0.2
+    Keras==1.1.1
 
 WORKDIR /root
 
@@ -46,7 +46,7 @@ ENV PYTHONPATH=/root/caffe/python:$PYTHONPATH
 # compressed textures tools
 RUN apt-get install -y libnvtt-bin
 RUN cd && \
-    wget https://github.com/oxygine/oxygine-framework/raw/master/3rdPartyTools/linux/PVRTexToolCLI ~/PVRTexToolCLI && \
+    wget https://github.com/oxygine/oxygine-framework/raw/master/3rdPartyTools/linux/PVRTexToolCLI && \
     chmod +x ~/PVRTexToolCLI
 
 # clone git repo bengler propinquity
