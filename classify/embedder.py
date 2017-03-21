@@ -32,59 +32,59 @@ class Embedding_model:
 		'photography' : {
 			'caffe_model_definition' : {
 				'filename': 'keywords_deploy.prototxt',
-				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/deploy.prototxt'
+				'source': 'https://www.dropbox.com/s/s8n974rhqhhxnll/deploy.prototxt?dl=1'
 			},
 			'caffe_model_weights' : {
 				'filename': 'keywords_model.caffemodel',
-				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel'
+				'source': 'https://www.dropbox.com/s/s55vcd3ejtt597u/finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel?dl=1'
 			},
 			'tsne' : {
 				'filename': 'photo_ptsne.h5',
-				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/paintings/DM_keyword_model_9.h5'
+				'source': 'https://www.dropbox.com/s/e5dw0j5k647ln7j/DM_keyword_model_9.h5?dl=1'
 			}
 		},
 		'painting' : {
 			'caffe_model_definition' : {
 				'filename': 'keywords_deploy.prototxt',
-				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/deploy.prototxt'
+				'source': 'https://www.dropbox.com/s/s8n974rhqhhxnll/deploy.prototxt?dl=1'
 			},
 			'caffe_model_weights' : {
 				#'filename': 'finetuned_bengler_googlenet_2_iter_302457.caffemodel',
 				'filename': 'keywords_model.caffemodel',
-				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel'
+				'source': 'https://www.dropbox.com/s/s55vcd3ejtt597u/finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel?dl=1'
 			},
 			'tsne' : {
 				#'filename': 'style_model.h5',
 				'filename': 'painting_ptsne.h5',
-				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/paintings/DM_keyword_model_9.h5'
+				'source': 'https://www.dropbox.com/s/e5dw0j5k647ln7j/DM_keyword_model_9.h5?dl=1'
 			}
 		},
 		'printmaking' : {
 			'caffe_model_definition' : {
 				'filename': 'keywords_deploy.prototxt',
-				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/deploy.prototxt'
+				'source': 'https://www.dropbox.com/s/s8n974rhqhhxnll/deploy.prototxt?dl=1'
 			},
 			'caffe_model_weights' : {
 				'filename': 'keywords_model.caffemodel',
-				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel'
+				'source': 'https://www.dropbox.com/s/s55vcd3ejtt597u/finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel?dl=1'
 			},
 			'tsne' : {
 				'filename': 'prints_ptsne.h5',
-				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/DM_printmaking_model_3.h5'
+				'source': 'https://www.dropbox.com/s/5jbha4evz5svr8x/DM_printmaking_model_3.h5?dl=1'
 			}
 		},
 		'drawings' : {
 			'caffe_model_definition' : {
 				'filename': 'keywords_deploy.prototxt',
-				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/deploy.prototxt'
+				'source': 'https://www.dropbox.com/s/s8n974rhqhhxnll/deploy.prototxt?dl=1'
 			},
 			'caffe_model_weights' : {
 				'filename': 'keywords_model.caffemodel',
-				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/printmaking/finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel'
+				'source': 'https://www.dropbox.com/s/s55vcd3ejtt597u/finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel?dl=1'
 			},
 			'tsne' : {
 				'filename': 'drawings_ptsne.h5',
-				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/drawings/DM_drawings_model_1.h5'
+				'source': 'https://www.dropbox.com/s/6w75l3o51r7hwsp/DM_drawings_model_1.h5?dl=1'
 			}
 		},
 		'design' : {
@@ -98,7 +98,7 @@ class Embedding_model:
 			},
 			'tsne' : {
 				'filename': 'design_ptsne.h5',
-				'source': 'https://dl.dropboxusercontent.com/u/10557805/bengler/models/design/DM_design_model_2.h5'
+				'source': 'https://www.dropbox.com/s/a18ov3hh4d2bzvs/DM_design_model_2.h5?dl=1'
 			}
 		},
 	}
