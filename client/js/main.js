@@ -553,7 +553,7 @@ function render() {
     document.addEventListener( 'touchstart', onTouchStart, false);
     renderer.domElement.addEventListener( 'touchmove', onTouchMove, false);
     document.addEventListener( 'touchcancel', onTouchEnd, false);
-    document.addEventListener( 'touchend', onTouchEnd, false);
+    renderer.domElement.addEventListener( 'touchend', onTouchEnd, false);
     document.addEventListener( 'mouseout', onMouseOut, false);
     renderer.domElement.addEventListener( 'mousedown', onWebGLMouseDown, false);
     renderer.domElement.addEventListener( 'mouseup', onWebGLMouseUp, false);
