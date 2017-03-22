@@ -260,10 +260,10 @@ function init() {
 
   //
 
-  stats = new Stats();
+  /*stats = new Stats();
   stats.domElement.style.position = 'absolute';
   stats.domElement.style.top = '0px';
-  container.appendChild( stats.domElement );
+  container.appendChild( stats.domElement );*/
 
   //
 
@@ -472,7 +472,7 @@ function animate() {
 
   render();
 
-  stats.update();
+  //stats.update();
   TWEEN.update();
 
 }
