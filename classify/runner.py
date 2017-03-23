@@ -32,7 +32,12 @@ collectionOpts = [
   {
     'collection_id': 'NMK-B',
     'artifact_name': 'Maleri',
-    'process_id': 'painting'
+    'process_id': 'painting_subject'
+  },
+  {
+    'collection_id': 'NMK-B',
+    'artifact_name': 'Maleri',
+    'process_id': 'painting_style'
   },
   {
     'collection_id': 'NMK-B',

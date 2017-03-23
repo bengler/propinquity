@@ -777,6 +777,6 @@ function loadScripts(url, onSuccess) {
 if (queryStrings['collection'] !== undefined) {
   dataPath = './data/'+queryStrings['collection']+'/';
 } else {
-  dataPath = './data/painting/';
+  dataPath = './data/painting_subject/';
 }
 loadScripts(dataPath+'collection.js',init);

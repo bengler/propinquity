@@ -43,20 +43,33 @@ class Embedding_model:
 				'source': 'https://www.dropbox.com/s/e5dw0j5k647ln7j/DM_keyword_model_9.h5?dl=1'
 			}
 		},
-		'painting' : {
+		'painting_subject' : {
 			'caffe_model_definition' : {
 				'filename': 'keywords_deploy.prototxt',
 				'source': 'https://www.dropbox.com/s/s8n974rhqhhxnll/deploy.prototxt?dl=1'
 			},
 			'caffe_model_weights' : {
-				#'filename': 'finetuned_bengler_googlenet_2_iter_302457.caffemodel',
 				'filename': 'keywords_model.caffemodel',
 				'source': 'https://www.dropbox.com/s/s55vcd3ejtt597u/finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel?dl=1'
 			},
 			'tsne' : {
-				#'filename': 'style_model.h5',
 				'filename': 'painting_ptsne.h5',
 				'source': 'https://www.dropbox.com/s/e5dw0j5k647ln7j/DM_keyword_model_9.h5?dl=1'
+			}
+		},
+		'painting_style' : {
+			'caffe_model_definition' : {
+				'filename': 'style_deploy.prototxt',
+				'source': 'https://www.dropbox.com/s/8thywuijcd5npst/deploy.prototxt?dl=1'
+			},
+			'caffe_model_weights' : {
+				'filename': 'style_model.caffemodel',
+				'source': 'https://www.dropbox.com/s/i0xj35eokn7n2rs/finetuned_bengler_googlenet_2_iter_302457.caffemodel?dl=1'
+			},
+			'tsne' : {
+				'filename': 'painting_style_ptsne.h5',
+				'source': 'https://www.dropbox.com/s/q3rma3zjaue4v7k/DM_style_model_3.h5?dl=1',
+				'transpose' : True
 			}
 		},
 		'printmaking' : {
@@ -137,6 +150,7 @@ class Embedding_model:
 
 		# initialize t-sne
 		self.tsne = load_model(keras_ptsne_model, custom_objects={'KLdivergence' : KLdivergence})
+		self.transpose_tsne = True if 'transpose' in models['tsne'] else False
 
 		self.loaded_models = True
 
@@ -149,6 +163,8 @@ class Embedding_model:
 
 	def tsne_embed(self, features):
 		pred = self.tsne.predict(features)
+		if self.transpose_tsne:
+			pred = pred[:,[1,0]]
 
 		return pred
 
