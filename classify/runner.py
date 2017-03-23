@@ -66,6 +66,7 @@ for options in collectionOpts:
   fetcher.fetch_new(options)
   embedder.embed_new(options)
   collection.write()
-  build_webdata.build_web_files(options)
+  if collection.modified:
+    build_webdata.build_web_files(options)
 
 
