@@ -3,22 +3,9 @@
  * @author Mark Lundin 	/ http://mark-lundin.com
  * @author Simone Manini / http://daron1337.github.io
  * @author Luca Antiga 	/ http://lantiga.github.io
- ** three-trackballcontrols module
- ** @author Jon Lim / http://jonlim.ca
  */
 
-var THREE = require('three');
-
-
-/**
- * @author Eberhard Graether / http://egraether.com/
- * @author Mark Lundin 	/ http://mark-lundin.com
- * @author Simone Manini / http://daron1337.github.io
- * @author Luca Antiga 	/ http://lantiga.github.io
- */
-
-var TrackballControls;
-module.exports = TrackballControls = function ( object, domElement ) {
+THREE.TrackballControls = function ( object, domElement ) {
 
 	var _this = this;
 	var STATE = { NONE: - 1, ROTATE: 2, ZOOM: 1, PAN: 0, TOUCH_PAN: 3, TOUCH_ZOOM: 4 };
@@ -50,10 +37,6 @@ module.exports = TrackballControls = function ( object, domElement ) {
 	this.keys = [ 65 /*A*/, 83 /*S*/, 68 /*D*/ ];
 
 	this.ismousedown = false;
-
-	this.maxPanX = Infinity;
-	this.maxPanY = Infinity;
-	this.unprojectZ = 1;
 
 	// internals
 
@@ -270,13 +253,13 @@ module.exports = TrackballControls = function ( object, domElement ) {
 				var vector_1 = new THREE.Vector3((_panEnd.x*2)-1, (_panEnd.y*2)-1, 0.5);
 				vector_1.unproject( _this.object );
 				var dir_1 = vector_1.sub( _this.object.position ).normalize();
-				var distance_1 = (this.unprojectZ-_this.object.position.z) / dir_1.z;
+				var distance_1 = - _this.object.position.z / dir_1.z;
 				var pe = dir_1.multiplyScalar( distance_1 );
 
 				var vector_2 = new THREE.Vector3((_panStart.x*2)-1, (_panStart.y*2)-1, 0.5);
 				vector_2.unproject( _this.object );
 				var dir_2 = vector_2.sub( _this.object.position ).normalize();
-				var distance_2 = (this.unprojectZ-_this.object.position.z) / dir_2.z;
+				var distance_2 = - _this.object.position.z / dir_2.z;
 				var ps = dir_2.multiplyScalar( distance_2 );
 
 				var diff = pe.sub(ps);
@@ -284,11 +267,6 @@ module.exports = TrackballControls = function ( object, domElement ) {
 				pan.copy( _eye ).cross( _this.object.up ).setLength( diff.x );
 				pan.add( objectUp.copy( _this.object.up ).setLength( diff.y ) );
 
-				if (pan.x < 0 && (_this.object.position.x + pan.x) < this.minPanX) pan.x = 0;
-				if (pan.x > 0 && (_this.object.position.x + pan.x) > this.maxPanX) pan.x = 0;
-				if (pan.y < 0 && (_this.object.position.y + pan.y) < this.minPanY) pan.y = 0;
-				if (pan.y > 0 && (_this.object.position.y + pan.y) > this.maxPanY) pan.y = 0;
-				
 				_this.object.position.add( pan );
 				_this.target.add( pan );
 
@@ -657,4 +635,5 @@ module.exports = TrackballControls = function ( object, domElement ) {
 
 };
 
-TrackballControls.prototype = Object.create( THREE.EventDispatcher.prototype );
+THREE.TrackballControls.prototype = Object.create( THREE.EventDispatcher.prototype );
+THREE.TrackballControls.prototype.constructor = THREE.TrackballControls;

@@ -1,7 +1,5 @@
 var TWEEN = require("tween.js")
 
-var TrackballControls = require('./three-trackballcontrols');
-
 var Fisheye = require('./Fisheye')
 var detector = require('./Detector')
 
@@ -206,8 +204,8 @@ function init() {
 
     // marker of image
     if (lookupWork(queryStrings['id']) !== undefined) {
-      var workMarkerMaterial = new THREE.MeshBasicMaterial({ color : 0xffffee, transparent : true, opacity: 0.5 ,overdraw : true });
-      var workMarkerGeom = new THREE.CircleGeometry( 1*Math.sqrt(2*tileSize*tileSize), 32 );
+      var workMarkerMaterial = new THREE.MeshBasicMaterial({ color : 0xffffee, transparent : true, opacity: 0.3 ,overdraw : true });
+      var workMarkerGeom = new THREE.CircleGeometry( 1*Math.sqrt(1*tileSize*tileSize), 32 );
       workMarker = new THREE.Mesh( workMarkerGeom, workMarkerMaterial );
       workMarker.position.set(workMarkerPosition.x, workMarkerPosition.y, workMarkerPosition.z);
       scene.add(workMarker);
@@ -244,7 +242,7 @@ function init() {
 
   //
 
-  controls = new TrackballControls( camera, renderer.domElement );
+  controls = new THREE.TrackballControls( camera );
   controls.minDistance = minTouchDist;
   controls.maxDistance = 2200;
   controls.noRotate = true;
@@ -309,7 +307,6 @@ function onMouseOut( event ) {
 
 function onDocumentMouseMove( event ) {
   event.preventDefault();
-  // if (autoZoomed) return;
 
   if (isTouch) {
     isTouch = false;
