@@ -92,7 +92,7 @@ function init() {
 
   container.appendChild( renderer.domElement );
 
-  // 
+  //
 
   for (var i = 0;i < mosaics.length;i++) {
     numberWorks += mosaics[i]["tiles"];
@@ -117,7 +117,7 @@ function init() {
   var feD = 5;
   var feR = tileSize*10;
   fisheye = Fisheye.circular().radius(feR).distortion(feD);
-  
+
   // calculate the maximum z-height of works distorted by fisheye
   var k0 = Math.exp(feD) / (Math.exp(feD) - 1) * feR;
   maxFisheyeZ = (k0 * (1 - Math.exp(-0.001 * feD/feR)) / 0.001 * .75 + .25) * z_scaler;
@@ -309,7 +309,7 @@ function onMouseOut( event ) {
 
 function onDocumentMouseMove( event ) {
   event.preventDefault();
-  if (autoZoomed) return;
+  // if (autoZoomed) return;
 
   if (isTouch) {
     isTouch = false;
@@ -349,12 +349,12 @@ function recalculateFishEye(coords, unproject) {
   }
 
   fisheye.focus([coords.x,coords.y]);
-  
+
   for (var i = 0;i < collection.length;i++) {
     var x_coords = collection[i]['embedding_x'];
     var y_coords = collection[i]['embedding_y'];
     var fisheye_trans = fisheye({x: x_coords, y: y_coords});
-    
+
     var x_size = collection[i]['draw_width']/2
     var y_size = collection[i]['draw_height']/2
     var x_offset = x_size+((fisheye_trans.z-1)*0.7*x_size);
