@@ -28,6 +28,8 @@ var numberWorks = 0;
 var numTextures, textureLoader, jpgTextureLoader;
 
 var autoPanVec = -1;
+var autoPanStart = 0.4;
+var autoPanStop = 0.98;
 
 var firstRender = true;
 
@@ -393,7 +395,8 @@ function recalculateFishEye(coords, unproject) {
 function autoPan(mouse) {
 
   var mouseVec = new THREE.Vector3(mouse.x, mouse.y, 0)
-  if (mouseVec.length() > 0.75 && mouseVec.length() < 2) {
+  let mouseVecLength = mouseVec.length()
+  if (mouseVecLength > autoPanStart && mouseVecLength < autoPanStop) {
     autoPanVec = mouseVec
   } else {
     autoPanVec = -1
@@ -451,8 +454,12 @@ function animate() {
 
   if (autoPanVec != -1 && !controls.ismousedown) {
     var temp = autoPanVec.clone();
-    temp.x /= 3;
-    temp.y /= 3;
+
+    var scaledVec = (Math.min(temp.length(), autoPanStop) - autoPanStart) / (autoPanStop - autoPanStart)
+    var smoothSpeeder = Math.sin(scaledVec * Math.PI) * 1.5
+
+    temp.x *= smoothSpeeder;
+    temp.y *= smoothSpeeder;
     var new_x = controls.target.x + autoPanVec.x;
     var new_y = controls.target.y + autoPanVec.y;
     if (autoPanVec.x < 0 && new_x < minX) temp.x = 0;
