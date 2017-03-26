@@ -28,7 +28,7 @@ def build_web_files(options):
 	orig_json = pd.read_csv(initial_filename, encoding='utf-8',
 		na_values=new_na_values, keep_default_na=False) \
 					.transpose().to_dict().values()
-	
+
 	# center embedding coordinates
 	num_embeddings = 0
 	x_mean = 0.0
@@ -57,7 +57,7 @@ def build_web_files(options):
 				work['yearstring'] = year_start+"-"+year_end
 				if len(work['yearstring']) == 1:
 					work['yearstring'] = ''
-			
+
 			# remove all text "[]" from title
 			work['title'] = re.sub('\[.*?\]','', work['title']).strip()
 
@@ -116,7 +116,7 @@ def build_web_files(options):
 			mosaic.paste(I,(left, top, left + TILESIZE, top + TILESIZE))
 
 		mosaic_filename = "data/%s/%s_mosaic_%d.jpg" % (process, process, mosaic_index)
-		mosaic.save(mosaic_filename, format="jpeg", optimize=True)
+		mosaic.save(mosaic_filename, format="jpeg", quality=80, optimize=True)
 		mosaic_images['jpg'] = "%s_mosaic_%d.jpg" % (process, mosaic_index)
 
 		mosaic_lg_filename = "data/%s/%s_mosaic_%d.png" % (process, process, mosaic_index)
@@ -186,5 +186,5 @@ def build_web_files(options):
 		"pixelWidth" : canvas_size
 	}], indent=2)
 	of.write("var canvas_mosaics = "+canvas_mosaics_json+";\n")
-	
+
 	of.close()
