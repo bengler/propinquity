@@ -74,10 +74,14 @@ function init() {
   if ( Detector.webgl ) {
     renderer = new THREE.WebGLRenderer( { antialias: false, alpha : true, logarithmicDepthBuffer: true  } );
     var availableExtensions = renderer.context.getSupportedExtensions();
-    if (availableExtensions.indexOf("WEBGL_compressed_texture_s3tc") > -1) textureFormat = "s3tc";
-    else if (availableExtensions.indexOf("WEBGL_compressed_texture_pvrtc") > -1 || availableExtensions.indexOf("WEBKIT_WEBGL_compressed_texture_pvrtc") > -1) textureFormat = "pvrtc";
+
+    // If it works with VRAM constraints, prefer jpg for over the wire savings
+    textureFormat = "jpg";
+
+    // if (availableExtensions.indexOf("WEBGL_compressed_texture_s3tc") > -1) textureFormat = "s3tc";
+    // else if (availableExtensions.indexOf("WEBGL_compressed_texture_pvrtc") > -1 || availableExtensions.indexOf("WEBKIT_WEBGL_compressed_texture_pvrtc") > -1) textureFormat = "pvrtc";
     //else if (availableExtensions.indexOf("WEBGL_compressed_texture_etc1") > -1) textureFormat = "etc1";
-    else textureFormat = "jpg";
+    // else textureFormat = "jpg";
   } else {
     renderer = new THREE.CanvasRenderer( { antialias: false, alpha : true } );
     textureFormat = "jpg";
