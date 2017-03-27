@@ -5,7 +5,7 @@
   "main": "",
   "scripts": {
     "start": "webpack-dev-server -d --progress --colors",
-    "build": "webpack"
+    "build": "webpack -p"
   },
   "author": "",
   "license": "ISC",
