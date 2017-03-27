@@ -73,8 +73,6 @@ class Collection:
 			pd.DataFrame(self.works).to_csv(
 				self.collection_filename, index=False, columns=self.FIELDS,
 				encoding='utf-8')
-			self.modified = False
-
 			logger.info("%d new works written to file" % self.newWorksFound)
 			logger.info("Saved modifications to collection")
 		else:
@@ -111,5 +109,5 @@ class Collection:
 		self.works[int(sequence_id) - 1]['embedding_x'] = embedding[0]
 		self.works[int(sequence_id) - 1]['embedding_y'] = embedding[1]
 		self.modified = True
-		
+
 		return None
