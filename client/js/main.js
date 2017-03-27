@@ -3,6 +3,8 @@ var TWEEN = require("tween.js")
 var Fisheye = require('./Fisheye')
 var detector = require('./Detector')
 
+var languageStrings = require('./languageStrings')
+
 var container, stats;
 
 var camera, scene, renderer;
@@ -28,8 +30,8 @@ var numberWorks = 0;
 var numTextures, textureLoader, jpgTextureLoader;
 
 var autoPanVec = -1;
-var autoPanStart = 0.4;
-var autoPanStop = 0.98;
+var autoPanStart = 0.55;
+var autoPanStop = 0.99;
 
 var firstRender = true;
 
@@ -61,6 +63,8 @@ var isCanvas = false;
 
 var workMarker, workMarkerPosition;
 var markedWork = -1;
+
+var language = 'en'
 
 var textureLoaders = {
   's3tc' : THREE.DDSLoader,
@@ -337,19 +341,16 @@ function onDocumentMouseMove( event ) {
   recalculateFishEye(mouse)
 }
 
-function recalculateFishEye(coords, unproject) {
-  if (unproject === undefined) unproject = true;
-  if (unproject) {
-    var vector = new THREE.Vector3();
-    vector.set(coords.x, coords.y, 1)
-    vector.unproject( camera );
+function recalculateFishEye(coords) {
 
-    var dir = vector.sub( camera.position ).normalize();
+  var vector = new THREE.Vector3();
+  vector.set(coords.x, coords.y, 1)
+  vector.unproject( camera );
 
-    var distance = (maxFisheyeZ - camera.position.z) / dir.z;
+  var dir = vector.sub( camera.position ).normalize();
+  var distance = (maxFisheyeZ - camera.position.z) / dir.z;
 
-    coords = camera.position.clone().add( dir.multiplyScalar( distance ) );
-  }
+  coords = camera.position.clone().add( dir.multiplyScalar( distance ) );
 
   fisheye.focus([coords.x,coords.y]);
 
@@ -456,10 +457,10 @@ function animate() {
     var temp = autoPanVec.clone();
 
     var scaledVec = (Math.min(temp.length(), autoPanStop) - autoPanStart) / (autoPanStop - autoPanStart)
-    var smoothSpeeder = Math.sin(scaledVec * Math.PI) * 1.5
+    var speed = Math.sin(scaledVec * Math.PI) * 1.5
 
-    temp.x *= smoothSpeeder;
-    temp.y *= smoothSpeeder;
+    temp.x *= speed;
+    temp.y *= speed;
     var new_x = controls.target.x + autoPanVec.x;
     var new_y = controls.target.y + autoPanVec.y;
     if (autoPanVec.x < 0 && new_x < minX) temp.x = 0;
@@ -573,6 +574,7 @@ function render() {
     document.getElementById("ui_reset").addEventListener("click", onUIReset, false);
     document.getElementById("ui_reset").addEventListener("touchend", onUIReset, false);
     controls.enabled = true;
+    localStorage.setItem('propinquity', 'true');
 
     // zoom towards specific work if specified in url
     if (queryStrings['id'] !== undefined) {
@@ -672,7 +674,7 @@ function removeHighResImage(index) {
 }
 
 function onMouseWheel(event) {
-  var factor = 0.05;
+  var factor = 0.02;
 
   var mX = ( event.clientX / window.innerWidth ) * 2 - 1;
   var mY = - ( event.clientY / window.innerHeight ) * 2 + 1;
@@ -747,7 +749,7 @@ var autoZoom = function(coords) {
   var tweenVars = camera.position.clone();
   tweenVars.factor = 0;
   var tween = new TWEEN.Tween(tweenVars)
-    .to({x : coords[0], y: coords[1], z : 300, factor : 1}, 2000)
+    .to({x : coords[0], y: coords[1], z : 320, factor : 1}, 1500)
     .onUpdate(function() {
       camera.position.x = this.x;
       camera.position.y = this.y;
@@ -761,7 +763,7 @@ var autoZoom = function(coords) {
       updateTileInfo();
     })
   tween.easing(TWEEN.Easing.Exponential.InOut);
-  tween.delay(1000);
+  tween.delay(200);
   tween.start();
 }
 
@@ -788,3 +790,37 @@ if (queryStrings['collection'] !== undefined) {
   dataPath = './data/painting_subject/';
 }
 loadScripts(dataPath+'collection.js',init);
+
+preferredLanguage = navigator.languages
+    ? navigator.languages[0]
+    : (navigator.language || navigator.userLanguage)
+
+if (queryStrings['lang'] == 'no' || preferredLanguage == 'nb_NO' || preferredLanguage == 'nn_NO') {
+  language = 'no'
+}
+
+
+document.getElementById("message").innerHTML = languageStrings[language].loading;
+document.getElementById("moreinfo").innerHTML = languageStrings[language].description;
+document.getElementById("moreinfolink").innerHTML = languageStrings[language].what;
+document.getElementById("hidemebutton").innerHTML = languageStrings[language].hidehidemebuttoncopy;
+
+function showInfo() {
+  var el = document.getElementById("moreinfocontainer");
+  el.style.display = 'block';
+  el.classList.add('showing');
+}
+
+if (true || localStorage.getItem("propinquity") == undefined) {
+  showInfo();
+}
+
+document.getElementById("moreinfolink").addEventListener("click", function(even) {
+  showInfo();
+})
+
+document.getElementById("hidemebutton").addEventListener("click", function(event) {
+  var el = document.getElementById("moreinfocontainer");
+  el.style.display = 'none';
+  el.classList.remove('showing');
+});
