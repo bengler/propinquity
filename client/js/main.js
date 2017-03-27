@@ -81,7 +81,7 @@ function init() {
     renderer = new THREE.WebGLRenderer( { antialias: false, alpha : true, logarithmicDepthBuffer: true  } );
     var availableExtensions = renderer.context.getSupportedExtensions();
 
-    // If it works with VRAM constraints, prefer jpg for over the wire savings
+    // If it works with VRAM constraints, prefer jpg for over-the-wire savings
     textureFormat = "jpg";
 
     // if (availableExtensions.indexOf("WEBGL_compressed_texture_s3tc") > -1) textureFormat = "s3tc";
@@ -99,8 +99,6 @@ function init() {
   renderer.setSize( window.innerWidth, window.innerHeight );
 
   container.appendChild( renderer.domElement );
-
-  //
 
   for (var i = 0;i < mosaics.length;i++) {
     numberWorks += mosaics[i]["tiles"];
@@ -144,7 +142,6 @@ function init() {
 
   camera = new THREE.PerspectiveCamera( fov, window.innerWidth / window.innerHeight, 10, 3500 );
   camera.position.z = 2000;
-
   scene = new THREE.Scene();
 
   //
@@ -799,7 +796,6 @@ if (queryStrings['lang'] == 'no' || preferredLanguage == 'nb_NO' || preferredLan
   language = 'no'
 }
 
-
 document.getElementById("message").innerHTML = languageStrings[language].loading;
 document.getElementById("moreinfo").innerHTML = languageStrings[language].description;
 document.getElementById("moreinfolink").innerHTML = languageStrings[language].what;
@@ -811,7 +807,7 @@ function showInfo() {
   el.classList.add('showing');
 }
 
-if (true || localStorage.getItem("propinquity") == undefined) {
+if (localStorage.getItem("propinquity") == undefined) {
   showInfo();
 }
 
