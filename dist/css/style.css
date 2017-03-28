@@ -58,7 +58,6 @@ body {
   margin: 0 auto;
   background-color: #333;
   color: #eee;
-  padding: 30px;
   z-index: 10;
   opacity: 0;
   width: 100%;
@@ -75,9 +74,11 @@ body {
 }
 
 #moreinfo {
+  margin: 0 auto;
   max-width: 600px;
   margin-top: 60px;
   text-align: left;
+  padding: 30px;
 }
 
 #moreinfo a {
@@ -91,7 +92,7 @@ body {
   font-size: 1.2em;
   font-weight: 800;
   width: 30%;
-  margin: 1em auto 0em auto;
+  margin: 0em auto 0em auto;
   cursor: pointer;
   color: #eee;
   border: 2px solid #eee;

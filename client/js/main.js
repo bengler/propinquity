@@ -21,8 +21,6 @@ var currentIntersectFace = -1;
 
 var tileSize;
 
-var fisheye;
-
 var mouse_down_init_position;
 
 var numberWorks = 0;
@@ -54,8 +52,10 @@ var minX = minY = Infinity;
 var maxX = maxY = -Infinity;
 
 var minTouchDist, minFisheyeDist;
-
 var maxFisheyeZ;
+var fisheye;
+var fisheyeDistortionDestination = 5;
+var fisheyeDistortion = 0.0001;
 
 var textureFormat;
 
@@ -63,6 +63,7 @@ var isCanvas = false;
 
 var workMarker, workMarkerPosition;
 var markedWork = -1;
+
 
 var language = 'en'
 
@@ -122,9 +123,10 @@ function init() {
   // set tilesize so that images approximately cover entire map
   tileSize = Math.sqrt( Math.PI*Math.pow((collectionWidth+collectionHeight)/4,2) / numberWorks );
 
-  var feD = 5;
   var feR = tileSize*10;
-  fisheye = Fisheye.circular().radius(feR).distortion(feD);
+  fisheye = Fisheye.circular().radius(feR).distortion(fisheyeDistortion);
+
+  var feD = fisheyeDistortionDestination;
 
   // calculate the maximum z-height of works distorted by fisheye
   var k0 = Math.exp(feD) / (Math.exp(feD) - 1) * feR;
@@ -317,6 +319,10 @@ function onMouseOut( event ) {
 function onDocumentMouseMove( event ) {
   event.preventDefault();
 
+  if (autoZoomed) {
+    return
+  }
+
   if (isTouch) {
     isTouch = false;
     controls.unprojectZ = maxFisheyeZ;
@@ -348,8 +354,13 @@ function recalculateFishEye(coords) {
 
   var dir = vector.sub( camera.position ).normalize();
   var distance = (maxFisheyeZ - camera.position.z) / dir.z;
-
   coords = camera.position.clone().add( dir.multiplyScalar( distance ) );
+
+  if (fisheyeDistortion < (fisheyeDistortionDestination - 0.1)) {
+    fisheyeDistortion += (fisheyeDistortionDestination - fisheyeDistortion) / 20
+    var feR = tileSize*10;
+    fisheye = Fisheye.circular().radius(feR).distortion(fisheyeDistortion);
+  }
 
   fisheye.focus([coords.x,coords.y]);
 
@@ -452,11 +463,13 @@ function onLinkTouchEnd( event ) {
 
 function animate() {
 
-  if (autoPanVec != -1 && !controls.ismousedown) {
+  if (!autoZoomed && autoPanVec != -1 && !controls.ismousedown) {
     var temp = autoPanVec.clone();
 
-    var scaledVec = (Math.min(temp.length(), autoPanStop) - autoPanStart) / (autoPanStop - autoPanStart)
-    var speed = Math.sin(scaledVec * Math.PI) * 1.5
+    var scaledVec = (Math.min(temp.length(), autoPanStop) - autoPanStart) / (autoPanStop - autoPanStart);
+    var distanceScale = (camera.position.z) / 2200;
+
+    var speed = Math.sin(scaledVec * Math.PI) * 4 * distanceScale;
 
     temp.x *= speed;
     temp.y *= speed;
@@ -756,6 +769,7 @@ var autoZoom = function(coords) {
     })
     .onComplete(function() {
       // select work
+      autoZoomed = false;
       mouse.x = 0;
       mouse.y = 0;
       updateTileInfo();
@@ -808,7 +822,7 @@ function showInfo() {
   el.classList.add('showing');
 }
 
-if (localStorage.getItem("propinquity") == undefined) {
+if (true || localStorage.getItem("propinquity") == undefined) {
   showInfo();
 }
 
