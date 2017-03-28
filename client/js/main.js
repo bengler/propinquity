@@ -75,6 +75,8 @@ var textureLoaders = {
 
 function init() {
 
+  document.getElementById("message").style.display = "none";
+
   container = document.getElementById( 'container' );
 
   if ( Detector.webgl ) {
@@ -552,7 +554,6 @@ function render() {
   renderer.render( scene, camera );
 
   if (firstRender) {
-    document.getElementById("message").style.display = "none";
     renderer.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
     document.addEventListener( 'mousewheel', onMouseWheel, false);
     document.addEventListener( 'DOMMouseScroll', onMouseWheel, false); // for firefox
@@ -796,7 +797,7 @@ if (queryStrings['lang'] == 'no' || preferredLanguage == 'nb_NO' || preferredLan
   language = 'no'
 }
 
-document.getElementById("message").innerHTML = languageStrings[language].loading;
+document.getElementById("messagecontent").innerHTML = languageStrings[language].loading;
 document.getElementById("moreinfo").innerHTML = languageStrings[language].description;
 document.getElementById("moreinfolink").innerHTML = languageStrings[language].what;
 document.getElementById("hidemebutton").innerHTML = languageStrings[language].hidehidemebuttoncopy;
