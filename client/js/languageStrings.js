@@ -8,7 +8,7 @@ module.exports = {
     description: 'This page gives you a map of the entire collection. Artworks have been grouped by similarity. It works like a map so you can zoom in to look at single works. \
       <h2>What am I looking at?</h2> \
       <p>\
-      We trained an algorithm to identify similarities. On top we built this interface to display how it groups the images. We hope this will help you in finding new ways of exploring and seeing the collections.\
+      We trained an algorithm to identify similarities in works based on attributes like style and subject. On top we built this interface to show how it groups the images. We hope this will help you in finding new ways of exploring the collections.\
       </p>\
       <p>\
       The project received support from <a href="http://www.kulturradet.no/english">The Arts Council Norway</a> and is a collaboration between the Section for Digital Collection Management at the National Museum, <a href="http://www.auduno.com/">Audun Mathias Øygard</a> and <a href="http://bengler.no">Bengler</a>.\
