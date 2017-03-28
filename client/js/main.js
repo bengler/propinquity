@@ -568,8 +568,7 @@ function render() {
 
   if (firstRender) {
     renderer.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
-    document.addEventListener( 'mousewheel', onMouseWheel, false);
-    document.addEventListener( 'DOMMouseScroll', onMouseWheel, false); // for firefox
+    document.addEventListener( 'wheel', onMouseWheel, false);
     document.addEventListener( 'touchstart', onTouchStart, false);
     renderer.domElement.addEventListener( 'touchmove', onTouchMove, false);
     document.addEventListener( 'touchcancel', onTouchEnd, false);
