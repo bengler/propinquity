@@ -822,7 +822,7 @@ function showInfo() {
   el.classList.add('showing');
 }
 
-if (true || localStorage.getItem("propinquity") == undefined) {
+if (localStorage.getItem("propinquity") == undefined) {
   showInfo();
 }
 
