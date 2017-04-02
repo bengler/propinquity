@@ -76,8 +76,6 @@ var textureLoaders = {
 
 function init() {
 
-  document.getElementById("message").style.display = "none";
-
   container = document.getElementById( 'container' );
 
   if ( Detector.webgl ) {
@@ -275,7 +273,7 @@ function init() {
   container.appendChild( stats.domElement );*/
 
   //
-
+  document.getElementById("message").style.display = "none";
   window.addEventListener( 'resize', onWindowResize, false );
 }
 
