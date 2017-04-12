@@ -5,6 +5,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import sys
 import build_webdata
+import glob
 
 # set up rotating logfile (and log to console)
 logger = logging.getLogger('propinquity')
@@ -68,5 +69,12 @@ for options in collectionOpts:
   collection.write()
   if collection.modified:
     build_webdata.build_web_files(options)
-
-
+    # copy built files to dist folder
+    process = options['process_id']
+    dest_dir = "../dist/data/"+process+"/"
+    files = glob.glob("./data/"+process+"/"+process+"*")
+    files.append("./data/"+process+"/"+"collection.js")
+    if not os.path.exists(dest_dir):
+      os.mkdir(dest_dir)
+    for file in files:
+      shutil.copy(file, dest_dir)
