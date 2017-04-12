@@ -18,7 +18,7 @@ module.exports = {
       '
   },
   no: {
-    loading: 'Hold an, laster bilder…',
+    loading: 'Vennligst vent, laster bilder…',
     hidehidemebuttoncopy: 'Jøss',
     what: 'Hva er dette?',
     description: 'Her får du utsikt over hele samlingen i ett bilde. Vi har gruppert kunst med likhetstrekk og lar deg se samlingen fugleperspektiv. Samtidig kan du zoome inn på detaljer i enkeltverk hvis du ønsker. \
@@ -26,7 +26,7 @@ module.exports = {
       <p>\
       Vi spurte oss selv: kan vi trene opp en algoritme til å se likheter i samlingen vår og bruke det til å gi bedre oversikt? \
       </p><p>\
-      Ved hjelp av maskinlæring viser vi her algoritmens klassifisering av bildene våre etter likheter i motiv og stil. Vi håper dere vil ha nytte av en ny innfallsvinkel til kunsten på nettsidene våre og at visningen oppfordrer til nye oppdagelsesferder i samlingene.\
+      Ved hjelp av maskinlæring viser vi her algoritmens organisering av bildene våre etter likheter i motiv og stil. Vi håper dere vil ha nytte av en ny innfallsvinkel til kunsten på nettsidene våre og at visningen oppfordrer til nye oppdagelsesferder i samlingene.\
       </p><p>\
       Prosjektet er støttet av <a href="">Norsk kulturråd</a> og utført av seksjon Digital Samlingsforvaltning på Nasjonalmuseet i samarbeid med <a href="http://www.auduno.com/">Audun Mathias Øygard</a> og <a href="http://bengler.no">Bengler</a>.\
       </p>'
