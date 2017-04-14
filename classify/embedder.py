@@ -2,7 +2,6 @@ import requests
 import sys
 import os
 import numpy as np
-import csv
 import shutil
 from StringIO import StringIO
 import logging
@@ -32,72 +31,64 @@ class Embedding_model:
 		'photography' : {
 			'caffe_model_definition' : {
 				'filename': 'keywords_deploy.prototxt',
-				'source': 'https://www.dropbox.com/s/s8n974rhqhhxnll/deploy.prototxt?dl=1'
+				'copy': 'data/printmaking/models/keywords_deploy.prototxt'
 			},
 			'caffe_model_weights' : {
 				'filename': 'keywords_model.caffemodel',
-				'source': 'https://www.dropbox.com/s/s55vcd3ejtt597u/finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel?dl=1'
+				'copy': 'data/printmaking/models/keywords_model.caffemodel'
 			},
 			'tsne' : {
 				'filename': 'photo_ptsne.h5',
-				'source': 'https://www.dropbox.com/s/e5dw0j5k647ln7j/DM_keyword_model_9.h5?dl=1'
+				'copy': 'data/painting_subject/models/painting_ptsne.h5'
 			}
 		},
 		'painting_subject' : {
 			'caffe_model_definition' : {
 				'filename': 'keywords_deploy.prototxt',
-				'source': 'https://www.dropbox.com/s/s8n974rhqhhxnll/deploy.prototxt?dl=1'
+				'copy': 'data/printmaking/models/keywords_deploy.prototxt'
 			},
 			'caffe_model_weights' : {
 				'filename': 'keywords_model.caffemodel',
-				'source': 'https://www.dropbox.com/s/s55vcd3ejtt597u/finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel?dl=1'
+				'copy': 'data/printmaking/models/keywords_model.caffemodel'
 			},
 			'tsne' : {
-				'filename': 'painting_ptsne.h5',
-				'source': 'https://www.dropbox.com/s/e5dw0j5k647ln7j/DM_keyword_model_9.h5?dl=1'
+				'filename': 'painting_ptsne.h5'
 			}
 		},
 		'painting_style' : {
 			'caffe_model_definition' : {
-				'filename': 'style_deploy.prototxt',
-				'source': 'https://www.dropbox.com/s/8thywuijcd5npst/deploy.prototxt?dl=1'
+				'filename': 'style_deploy.prototxt'
 			},
 			'caffe_model_weights' : {
-				'filename': 'style_model.caffemodel',
-				'source': 'https://www.dropbox.com/s/i0xj35eokn7n2rs/finetuned_bengler_googlenet_2_iter_302457.caffemodel?dl=1'
+				'filename': 'style_model.caffemodel'
 			},
 			'tsne' : {
 				'filename': 'painting_style_ptsne.h5',
-				'source': 'https://www.dropbox.com/s/q3rma3zjaue4v7k/DM_style_model_3.h5?dl=1',
 				'transpose' : True
 			}
 		},
 		'printmaking' : {
 			'caffe_model_definition' : {
-				'filename': 'keywords_deploy.prototxt',
-				'source': 'https://www.dropbox.com/s/s8n974rhqhhxnll/deploy.prototxt?dl=1'
+				'filename': 'keywords_deploy.prototxt'
 			},
 			'caffe_model_weights' : {
-				'filename': 'keywords_model.caffemodel',
-				'source': 'https://www.dropbox.com/s/s55vcd3ejtt597u/finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel?dl=1'
+				'filename': 'keywords_model.caffemodel'
 			},
 			'tsne' : {
-				'filename': 'prints_ptsne.h5',
-				'source': 'https://www.dropbox.com/s/5jbha4evz5svr8x/DM_printmaking_model_3.h5?dl=1'
+				'filename': 'prints_ptsne.h5'
 			}
 		},
 		'drawings' : {
 			'caffe_model_definition' : {
 				'filename': 'keywords_deploy.prototxt',
-				'source': 'https://www.dropbox.com/s/s8n974rhqhhxnll/deploy.prototxt?dl=1'
+				'copy': 'data/printmaking/models/keywords_deploy.prototxt'
 			},
 			'caffe_model_weights' : {
 				'filename': 'keywords_model.caffemodel',
-				'source': 'https://www.dropbox.com/s/s55vcd3ejtt597u/finetuned_bengler_googlenet_lr0.0001to0.00001_iter_40000.caffemodel?dl=1'
+				'copy': 'data/printmaking/models/keywords_model.caffemodel'
 			},
 			'tsne' : {
-				'filename': 'drawings_ptsne.h5',
-				'source': 'https://www.dropbox.com/s/6w75l3o51r7hwsp/DM_drawings_model_1.h5?dl=1'
+				'filename': 'drawings_ptsne.h5'
 			}
 		},
 		'design' : {
@@ -110,8 +101,7 @@ class Embedding_model:
 				'source': 'http://dl.caffe.berkeleyvision.org/bvlc_googlenet.caffemodel'
 			},
 			'tsne' : {
-				'filename': 'design_ptsne.h5',
-				'source': 'https://www.dropbox.com/s/a18ov3hh4d2bzvs/DM_design_model_2.h5?dl=1'
+				'filename': 'design_ptsne.h5'
 			}
 		},
 	}
@@ -130,15 +120,19 @@ class Embedding_model:
 		for model in models.values():
 			filename = os.path.join(modelfolder, model['filename'])
 			if not os.path.exists(filename):
-				logger.info("could not find model file '%s', downloading..." % filename)
-				try:
-					response = requests.get(model['source'], stream=True)
-					with open(filename, 'wb') as out_file:
-						for chunk in response.iter_content(chunk_size=128):
-							out_file.write(chunk)
-				except RequestException:
-					logger.error("could not download model file '%s', aborting embedding..." % filename)
-					return None
+				if 'source' in model:
+					logger.info("could not find model file '%s', downloading..." % filename)
+					try:
+						response = requests.get(model['source'], stream=True)
+						with open(filename, 'wb') as out_file:
+							for chunk in response.iter_content(chunk_size=128):
+								out_file.write(chunk)
+					except RequestException:
+						logger.error("could not download model file '%s', aborting embedding..." % filename)
+						return None
+				elif 'copy' in model:
+					logger.info("copying model file '%s'" % filename)
+					shutil.copy(model['copy'], filename)
 
 		caffe_model_definition = os.path.join(modelfolder, models['caffe_model_definition']['filename'])
 		caffe_model_weights = os.path.join(modelfolder, models['caffe_model_weights']['filename'])

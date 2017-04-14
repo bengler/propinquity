@@ -1,4 +1,4 @@
-data
+dist/data/
 *.pyc
 *.DS_Store
 *.log
