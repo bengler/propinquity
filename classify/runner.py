@@ -1,5 +1,6 @@
 import fetcher
 import embedder
+import validation
 from collection import Collection
 import logging
 from logging.handlers import RotatingFileHandler
@@ -71,13 +72,23 @@ for options in collectionOpts:
   collection.write()
   if collection.modified:
     build_webdata.build_web_files(options)
-    # copy built files to dist folder
-    process = options['process_id']
-    dest_dir = "../dist/data/"+process+"/"
-    files = []
-    for ff in ['*.jpg','*.dds','*.js']:
-      files.extend( glob.glob("./data/"+process+"/"+ff) )
-    if not os.path.exists(dest_dir):
-      os.makedirs(dest_dir)
-    for file in files:
-      shutil.copy(file, dest_dir)
+
+    try:
+      validation.validate(options)
+    except:
+      exc_type, exc_value, exc_traceback = sys.exc_info()
+      logger.error(
+          "Validation of files for '{0}' failed with error : {1}".format(
+              options['process_id'], str(exc_value)),
+          exc_info=(exc_type, exc_value, exc_traceback))
+    else:
+      # copy built files to dist folder
+      process = options['process_id']
+      dest_dir = "../dist/data/"+process+"/"
+      files = []
+      for ff in ['*.jpg','*.dds','*.js']:
+        files.extend( glob.glob("./data/"+process+"/"+ff) )
+      if not os.path.exists(dest_dir):
+        os.makedirs(dest_dir)
+      for file in files:
+        shutil.copy(file, dest_dir)
