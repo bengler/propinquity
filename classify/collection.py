@@ -3,6 +3,7 @@ import datetime
 from dateutil import parser
 import pandas as pd
 import logging
+import numpy as np
 
 logger = logging.getLogger('propinquity')
 
@@ -87,6 +88,11 @@ class Collection:
 		return found_works
 
 	def add_image(self, sequence_id, img_width, img_height):
+		assert type(img_width) is int, "img_width is not an int : %r" % img_width
+		assert type(img_height) is int, "img_height is not an int : %r" % img_height
+		assert img_width > 0, "img_width is 0 for added image"
+		assert img_height > 0, "img_width is 0 for added image"
+
 		work = self.works[int(sequence_id) - 1]
 		work['image_downloaded'] = 1
 		work['image_width'] = img_width
@@ -105,6 +111,9 @@ class Collection:
 		return found_works
 
 	def add_embedding(self, sequence_id, embedding):
+		assert np.isfinite(embedding[0]), "embedding[0] is not a finite number : %r" % embedding[0]
+		assert np.isfinite(embedding[1]), "embedding[1] is not a finite number : %r" % embedding[1]
+
 		self.works[int(sequence_id) - 1]['embedded'] = 1
 		self.works[int(sequence_id) - 1]['embedding_x'] = embedding[0]
 		self.works[int(sequence_id) - 1]['embedding_y'] = embedding[1]
