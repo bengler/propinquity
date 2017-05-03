@@ -354,7 +354,7 @@ function recalculateFishEye(coords) {
   coords = camera.position.clone().add( dir.multiplyScalar( distance ) );
 
   if (fisheyeDistortion < (fisheyeDistortionDestination - 0.1)) {
-    fisheyeDistortion += (fisheyeDistortionDestination - fisheyeDistortion) / 80
+    fisheyeDistortion += (fisheyeDistortionDestination - fisheyeDistortion) / 20
     var feR = tileSize*10;
     fisheye = Fisheye.circular().radius(feR).distortion(fisheyeDistortion);
   }
