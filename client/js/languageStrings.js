@@ -21,7 +21,7 @@ module.exports = {
     loading: 'Vennligst vent, laster bilder…',
     hidehidemebuttoncopy: 'Greit',
     what: 'Hva er dette?',
-    description: '<p>Her får du utsikt over hele samlingen i ett bilde. Vi har gruppert kunst med likhetstrekk og lar deg se samlingen fugleperspektiv. Samtidig kan du zoome inn på detaljer i enkeltverk hvis du ønsker.</p>\
+    description: '<p>Her får du utsikt over hele samlingen i ett bilde. Vi har gruppert kunst med likhetstrekk og lar deg se samlingen i fugleperspektiv. Samtidig kan du zoome inn på detaljer i enkeltverk hvis du ønsker.</p>\
       <h2>Hva er dette?</h2> \
       <p>\
       Vi spurte oss selv: kan vi trene opp en algoritme til å se likheter i samlingen vår og bruke det til å gi bedre oversikt? \
