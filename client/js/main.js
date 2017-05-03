@@ -222,7 +222,7 @@ function init() {
 
     mesh = new THREE.Mesh(singleGeometry, multimaterial);
     scene.add(mesh);
-
+    document.getElementById("message").style.display = "none";
     animate();
   }
 
@@ -273,7 +273,6 @@ function init() {
   container.appendChild( stats.domElement );*/
 
   //
-  document.getElementById("message").style.display = "none";
   window.addEventListener( 'resize', onWindowResize, false );
 }
 
