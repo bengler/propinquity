@@ -4,3 +4,6 @@ dist/data/
 *.log
 images
 node_modules
+classify/data/
+*.swp
+*~
