@@ -19,7 +19,7 @@ module.exports = {
   },
   no: {
     loading: 'Vennligst vent, laster bilder…',
-    hidehidemebuttoncopy: 'Jøss',
+    hidehidemebuttoncopy: 'Greit',
     what: 'Hva er dette?',
     description: 'Her får du utsikt over hele samlingen i ett bilde. Vi har gruppert kunst med likhetstrekk og lar deg se samlingen fugleperspektiv. Samtidig kan du zoome inn på detaljer i enkeltverk hvis du ønsker. \
       <h2>Hva er dette?</h2> \
