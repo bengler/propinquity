@@ -70,8 +70,10 @@ body a:hover {
 
 
 #moreinfocontainer {
-  font-size: 1.3rem;
+  font-size: 1.15rem;
   position: absolute;
+  overflow: scroll;
+  max-height: 100%;
   margin: 0 auto;
   background-color: rgba(20,20,20,0.8);
   color: #eee;

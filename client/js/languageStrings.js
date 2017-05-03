@@ -29,6 +29,7 @@ module.exports = {
       Ved hjelp av maskinlæring viser vi her algoritmens organisering av bildene våre etter likheter i motiv og stil. Vi håper dere vil ha nytte av en ny innfallsvinkel til kunsten på nettsidene våre og at visningen oppfordrer til nye oppdagelsesferder i samlingene.\
       </p><p>\
       Prosjektet er støttet av <a href="">Norsk kulturråd</a> og utført av seksjon Digital Samlingsforvaltning på Nasjonalmuseet i samarbeid med <a href="http://www.auduno.com/">Audun Mathias Øygard</a> og <a href="http://bengler.no/principalcomponents">Bengler</a>.\
+      </p><p>\
       <small><a href="https://github.com/bengler/propinquity">Ta en titt på kildekoden</a></small>\
       </p>'
   }
