@@ -440,7 +440,7 @@ function onTouchEnd( event ) {
       }
       var metadata = collection[currentIntersectFace];
       document.getElementById("imageinfo").innerHTML = "<p><strong>"+metadata.artist+", <a href='"+work_url+
-        "' target='_blank'><em>"+metadata.title+"</em></a></strong>. "+metadata.yearstring+".</p>";
+        "' target='_blank'><em>"+metadata.title+"</em></a></strong>. "+metadata.yearstring+"</p>";
     }
   }
   if (autoZoomed) autoZoomed = false;
@@ -509,7 +509,7 @@ function updateTileInfo() {
     if (currentIntersectFace == -1) {
       // entering tile
       var metadata = collection[face_index];
-      document.getElementById("imageinfo").innerHTML = "<p><strong>"+metadata.artist+", <em>"+metadata.title+"</em></strong>. "+metadata.yearstring+".</p>";
+      document.getElementById("imageinfo").innerHTML = "<p><strong>"+metadata.artist+", <em>"+metadata.title+"</em></strong>. "+metadata.yearstring+"</p>";
       document.getElementById("imageinfo").style.display = "block";
       document.getElementById("container").setAttribute("class","clickable");
       currentIntersectFace = face_index;
@@ -525,7 +525,7 @@ function updateTileInfo() {
     } else if (face_index != currentIntersectFace) {
       // entering tile, leaving previous tile
       var metadata = collection[face_index];
-      document.getElementById("imageinfo").innerHTML = "<p><strong>"+metadata.artist+", <em>"+metadata.title+"</em></strong>. "+metadata.yearstring+".</p>";
+      document.getElementById("imageinfo").innerHTML = "<p><strong>"+metadata.artist+", <em>"+metadata.title+"</em></strong>. "+metadata.yearstring+"</p>";
       removeHighResImage(currentIntersectFace);
       if ( isTouch ) {
         // lower previous selected tile and raise new selected tile
