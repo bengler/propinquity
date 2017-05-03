@@ -5,15 +5,15 @@ module.exports = {
     loading: 'Please wait, loading images…',
     what: 'What\'s this?',
     hidehidemebuttoncopy: 'OK',
-    description: 'This page gives you a map of the entire collection. Artworks have been grouped by similarity. It works like a map so you can zoom in to look at single works. \
+    description: 'This page gives you an overview of the entire collection. Artworks have been grouped by similarity. It works just like a map so you can zoom in to look at single works. \
       <h2>What am I looking at?</h2> \
       <p>\
-      We trained an algorithm to identify similarities in works based on attributes like style and subject. On top we built this interface to show how it groups the images. We hope this will help you in finding new ways of exploring the collections.\
+      We trained a machine learning algorithm to identify similarities in works based on attributes like style and subject. On top we built this interface to show how it groups the works. We hope this will help in finding new ways of exploring the collections.\
       </p>\
       <p>\
       The project received support from <a href="http://www.kulturradet.no/english">The Arts Council Norway</a> and is a collaboration between the Section for Digital Collection Management at the National Museum, <a href="http://www.auduno.com/">Audun Mathias Øygard</a> and <a href="http://bengler.no">Bengler</a>.\
       </p><p>\
-      <a href="https://github.com/bengler/propinquity">GitHub</a>\
+      <small><a href="https://github.com/bengler/propinquity">Get the source code</a></small>\
       </p>\
       '
   },
