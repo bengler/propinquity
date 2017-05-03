@@ -87,7 +87,8 @@ def fetch_new(options):
 		start_date = arrow.get(options['start_date']) \
 			.shift(microseconds=1000).format('YYYY-MM-DDTHH:mm:ss.SSS')+'Z'
 
-	url = "http://api.dimu.org/api/solr/select?q=identifier.owner:%s%s&wt=json&fq=artifact.hasPictures:true&api.key=%s&fq=artifact.publishedDate:[%s TO NOW]&sort=artifact.publishedDate%%20asc" \
+	url = "http://api.dimu.org/api/solr/select?q=identifier.owner:%s%s&wt=json&fq=artifact.hasPictures:true&" \
+		"api.key=%s&fq=artifact.publishedDate:[%s TO NOW]&sort=artifact.publishedDate%%20asc,%%20identifier.id%%20asc" \
 		% (options['collection_id'], artifact_query, APIKEY, start_date)
 
 	response = requests.get(url)

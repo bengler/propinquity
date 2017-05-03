@@ -44,6 +44,7 @@ class Collection:
 		identifier = work['identifier']
 
 		if (self.is_retrieved(identifier)):
+			logger.info("Tried to add already existing work '%s'" % identifier)
 			return -1
 
 		sequence_id = len(self.works) + 1
