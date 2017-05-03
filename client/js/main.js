@@ -467,7 +467,7 @@ function animate() {
     var scaledVec = (Math.min(temp.length(), autoPanStop) - autoPanStart) / (autoPanStop - autoPanStart);
     var distanceScale = (camera.position.z) / 2200;
 
-    var speed = Math.sin(scaledVec * Math.PI) * 4 * distanceScale;
+    var speed = Math.sin(scaledVec * Math.PI) * 1 * distanceScale;
 
     temp.x *= speed;
     temp.y *= speed;
