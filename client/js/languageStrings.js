@@ -8,10 +8,10 @@ module.exports = {
     description: '<p>This page gives you an overview of the entire collection. Artworks have been grouped by similarity. It works just like a map so you can zoom in to look at single works.</p> \
       <h2>What am I looking at?</h2> \
       <p>\
-      We trained a machine learning algorithm to identify similarities based on attributes like style and subject. On top we built this interface to show how it groups the works. We hope it will be an inspiring new way to explore the collection.\
+      We trained an algorithm to identify similarities based on attributes like style and subject. On top we built this interface to show how it groups the works. We hope this novel way of navigating the collection makes it easier to discover new works.\
       </p>\
       <p>\
-      The project received support from <a href="http://www.kulturradet.no/english">The Arts Council Norway</a> and is a collaboration between the Section for Digital Collection Management at the National Museum, <a href="http://www.auduno.com/">Audun Mathias Øygard</a> and <a href="http://bengler.no">Bengler</a>.\
+      The project received support from <a href="http://www.kulturradet.no/english">The Arts Council Norway</a> and is a collaboration between the Section for Digital Collection Management at the National Museum, <a href="http://www.auduno.com/">Audun Mathias Øygard</a> and <a href="http://bengler.no/principalcomponents">Bengler</a>.\
       </p><p>\
       <small><a href="https://github.com/bengler/propinquity">Get the source code</a></small>\
       </p>\
@@ -28,7 +28,7 @@ module.exports = {
       </p><p>\
       Ved hjelp av maskinlæring viser vi her algoritmens organisering av bildene våre etter likheter i motiv og stil. Vi håper dere vil ha nytte av en ny innfallsvinkel til kunsten på nettsidene våre og at visningen oppfordrer til nye oppdagelsesferder i samlingene.\
       </p><p>\
-      Prosjektet er støttet av <a href="">Norsk kulturråd</a> og utført av seksjon Digital Samlingsforvaltning på Nasjonalmuseet i samarbeid med <a href="http://www.auduno.com/">Audun Mathias Øygard</a> og <a href="http://bengler.no">Bengler</a>.\
+      Prosjektet er støttet av <a href="">Norsk kulturråd</a> og utført av seksjon Digital Samlingsforvaltning på Nasjonalmuseet i samarbeid med <a href="http://www.auduno.com/">Audun Mathias Øygard</a> og <a href="http://bengler.no/principalcomponents">Bengler</a>.\
       <small><a href="https://github.com/bengler/propinquity">Ta en titt på kildekoden</a></small>\
       </p>'
   }

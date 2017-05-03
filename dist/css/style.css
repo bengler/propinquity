@@ -3,7 +3,7 @@ body {
   font-size:13px;
   text-align:center;
 
-  background-color: #333;
+  background-color: #222;
   margin: 0px;
   overflow: hidden;
 }
@@ -32,11 +32,11 @@ body a:hover {
 }
 
 #header a {
-  opacity : .8;
+  opacity : 0.9;
 }
 
 #header a:hover {
-  opacity : .9;
+  opacity : 1;
 }
 
 #header img {
@@ -53,7 +53,7 @@ body a:hover {
   left: 1rem;
   font-size: 1em;
   color : #fff;
-  background-color: #444;
+  background-color: rgba(20,20,20,0.7);
   opacity: 0.9;
   text-align: left;
   display : none;
@@ -68,32 +68,41 @@ body a:hover {
   margin-right : 20px;
 }
 
+
 #moreinfocontainer {
+  font-size: 1.3rem;
   position: absolute;
   margin: 0 auto;
-  background-color: #333;
+  background-color: rgba(20,20,20,0.8);
   color: #eee;
   z-index: 10;
   width: 100%;
   height: 100%;
 }
 
+@media (max-width: 750px) {
+  #moreinfocontainer {
+    font-size: 1.0rem;
+  }
+}
+
+
 #moreinfocontainer small {
   opacity: 0.7;
 }
 
 #moreinfocontainer.showing {
-  opacity: 0.85;
   display: block;
 }
 
 #moreinfocontainer h2 {
   font-size: 1em;
   padding: 0;
-  margin: 0.5em 0 0.3em 0;
+  margin: 0.5em 0 0.1em 0;
 }
 
 #moreinfocontainer p {
+  margin: 0.5em 0 0.5em 0;
   line-height: 1.4em;
 }
 
@@ -142,8 +151,8 @@ a {
 }
 
 #uicontrols img {
-  opacity : 0.8;
-  background-color: rgba(247,247,239,.6);
+  opacity : 0.9;
+  background-color: rgba(247,247,239,.9);
   padding: 12px 10px 10px 10px;
   width : 25px;
   height : 25px;
@@ -154,7 +163,7 @@ a {
 
 #uicontrols img:hover {
   opacity : 1;
-  background-color: rgba(247,247,239,.8);
+  background-color: rgba(247,247,239,1);
 }
 
 
@@ -170,7 +179,6 @@ a {
   font-size : 16px;
   color: #bbb;
 }
-
 
 
 @media (max-width: 740px) {

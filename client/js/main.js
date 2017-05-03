@@ -95,7 +95,7 @@ function init() {
     isCanvas = true;
     mosaics = canvas_mosaics;
   }
-  renderer.setClearColor( 0x333333 );
+  renderer.setClearColor( 0x222222 );
   renderer.setPixelRatio( window.devicePixelRatio );
   renderer.setSize( window.innerWidth, window.innerHeight );
 
