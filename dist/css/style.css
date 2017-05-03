@@ -8,6 +8,18 @@ body {
   overflow: hidden;
 }
 
+
+body a {
+  text-decoration: none;
+  font-weight: 700;
+}
+
+body a:hover {
+  text-decoration: underline;
+}
+
+
+
 #header {
   position : absolute;
   top : 20px;
@@ -20,11 +32,11 @@ body {
 }
 
 #header a {
-  opacity : .7;
+  opacity : .8;
 }
 
 #header a:hover {
-  opacity : .8 ;
+  opacity : .9;
 }
 
 #header img {
@@ -42,7 +54,7 @@ body {
   font-size: 1em;
   color : #fff;
   background-color: #444;
-  opacity: 0.7;
+  opacity: 0.9;
   text-align: left;
   display : none;
 }
@@ -57,15 +69,17 @@ body {
 }
 
 #moreinfocontainer {
-  transition: opacity 0.4s;
   position: absolute;
   margin: 0 auto;
   background-color: #333;
   color: #eee;
   z-index: 10;
-  opacity: 0;
   width: 100%;
   height: 100%;
+}
+
+#moreinfocontainer small {
+  opacity: 0.7;
 }
 
 #moreinfocontainer.showing {
@@ -75,6 +89,12 @@ body {
 
 #moreinfocontainer h2 {
   font-size: 1em;
+  padding: 0;
+  margin: 0.5em 0 0.3em 0;
+}
+
+#moreinfocontainer p {
+  line-height: 1.4em;
 }
 
 #moreinfo {
