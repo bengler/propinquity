@@ -7,6 +7,8 @@ var languageStrings = require('./languageStrings')
 
 var container, stats;
 
+var rootPath = 'http://vycdn.nasjonalmuseet.no'
+
 var camera, scene, renderer;
 
 var raycaster, mouse;
@@ -793,9 +795,9 @@ function loadScripts(url, onSuccess) {
 
 // load collection and initialize
 if (queryStrings['collection'] !== undefined) {
-  dataPath = './data/'+queryStrings['collection']+'/';
+  dataPath = rootPath + '/data/'+queryStrings['collection']+'/';
 } else {
-  dataPath = './data/painting_subject/';
+  dataPath = rootPath + '/data/painting_subject/';
 }
 loadScripts(dataPath+'collection.js',init);
 
