@@ -33,9 +33,13 @@ var autoPanVec = -1;
 var autoPanStart = 0.55;
 var autoPanStop = 0.99;
 
+var lastZoomX = 0
+var lastZoomY = 0
+
 var firstRender = true;
 
 var autoZoomed = false;
+var zoomDelta = 0;
 
 var hiResTexture;
 
@@ -495,6 +499,9 @@ function animate() {
   //stats.update();
   TWEEN.update();
 
+  updateZoom()
+
+
 }
 
 function updateTileInfo() {
@@ -682,17 +689,28 @@ function removeHighResImage(index) {
   }
 }
 
-function onMouseWheel(event) {
-  var factor = 0.02;
+function updateZoom() {
 
-  var mX = ( event.clientX / window.innerWidth ) * 2 - 1;
-  var mY = - ( event.clientY / window.innerHeight ) * 2 + 1;
+  if (zoomDelta == 0) {
+    return
+  }
+
+  var factor = zoomDelta;
+  zoomDelta *= 0.95;
+  if (Math.abs(zoomDelta) < 0.0001) {
+    zoomDelta = 0;
+    return
+  }
+
+  var mX = ( lastZoomX / window.innerWidth ) * 2 - 1;
+  var mY = - ( lastZoomY / window.innerHeight ) * 2 + 1;
   var vector = new THREE.Vector3(mX, mY, 1 );
 
   vector.unproject(camera); // gives us the true coordinates of the point
   vector.sub(camera.position);
-  var move = vector.setLength(camera.position.length()*factor);
-  if (event.deltaY < 0 || event.detail < 0) {
+  var move = vector.setLength(camera.position.length()*Math.abs(factor));
+
+  if (zoomDelta < 0) {
     if ((move.z + camera.position.z) < controls.minDistance) {
       move.z = controls.minDistance - camera.position.z;
     }
@@ -712,6 +730,18 @@ function onMouseWheel(event) {
     }
   }
 
+}
+
+
+function onMouseWheel(event) {
+  lastZoomX = event.clientX
+  lastZoomY = event.clientY
+
+  if (event.deltaY < 0 || event.detail < 0) {
+    zoomDelta -= 0.0008;
+  } else {
+    zoomDelta += 0.0008;
+  }
 }
 
 function onUIZoomIn(event) {
